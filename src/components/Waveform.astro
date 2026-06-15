@@ -1,0 +1,6 @@
+---
+const bars = Array.from({ length: 32 }, (_, i) => i);
+---
+<div class="waveform" aria-hidden="true">
+  {bars.map((i) => <span style={`--i:${i}`}></span>)}
+</div>

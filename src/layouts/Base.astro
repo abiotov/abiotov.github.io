@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+const {
+  title = 'Etienne Tovimafa — Applied AI Engineer',
+  description = "Applied AI engineer building LLM, RAG and real-time voice systems that reach production. Creator of AIVOKA, Benin's first AI legal assistant.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#16151A" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <script is:inline>
+      (function () {
+        try {
+          var s = localStorage.getItem('theme');
+          var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute('data-theme', s || (d ? 'dark' : 'light'));
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+    <script is:inline>
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+
+      var h = document.querySelector('.site-header');
+      if (h) {
+        var onScroll = function () { h.classList.toggle('scrolled', window.scrollY > 8); };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+      }
+    </script>
+  </body>
+</html>

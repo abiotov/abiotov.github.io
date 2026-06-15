@@ -1,0 +1,33 @@
+---
+import Base from './Base.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+const { frontmatter } = Astro.props;
+const title = frontmatter?.title ?? 'Writing';
+---
+
+<Base title={`${title} — Etienne Tovimafa`}>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="brand" href="/">Etienne Tovimafa</a>
+      <nav class="nav-links">
+        <a href="/#work">work</a>
+        <a href="/writing">writing</a>
+        <a href="/#about">about</a>
+        <ThemeToggle />
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <article class="article">
+      <a class="back-link" href="/writing">&larr; writing</a>
+      <h1 style="margin-top:18px">{title}</h1>
+      {frontmatter?.date && <span class="post-date">{frontmatter.date}</span>}
+      <slot />
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap"><p class="colophon">&copy; 2026 Etienne Tovimafa</p></div>
+  </footer>
+</Base>

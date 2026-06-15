@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import ThemeToggle from '../../components/ThemeToggle.astro';
+
+const posts = [
+  { title: 'Embedding clickable tweets in articles', date: '2026-06-15', href: '/writing/embedding-tweets/' },
+];
+---
+
+<Base title="Writing — Etienne Tovimafa" description="Notes and write-ups on building AI systems in production.">
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="brand" href="/">Etienne Tovimafa</a>
+      <nav class="nav-links">
+        <a href="/#work">work</a>
+        <a href="/writing">writing</a>
+        <a href="/#about">about</a>
+        <ThemeToggle />
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" style="padding-bottom:24px">
+      <h1>Writing</h1>
+      <p class="lede">Notes and write-ups on building AI systems in production. More soon.</p>
+    </section>
+
+    <section>
+      {posts.map((p) => (
+        <a class="post-row" href={p.href}>
+          <span class="post-title">{p.title}</span>
+          <span class="post-date">{p.date}</span>
+        </a>
+      ))}
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap"><p class="colophon">© 2026 Etienne Tovimafa</p></div>
+  </footer>
+</Base>
