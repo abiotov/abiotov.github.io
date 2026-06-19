@@ -1,28 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
-import Waveform from '../components/Waveform.astro';
 
-const projects = [
+const posts = [
   {
-    num: '01', name: 'AIVOKA', period: '2024 — present',
-    desc: 'The first AI legal assistant launched in Benin. Agentic RAG over Beninese & OHADA law, with multi-mode reasoning and structured citations.',
-    tags: 'python · langgraph · rag · qdrant',
-    links: [{ label: 'press →', href: 'https://lepotentiel.bj/2025/10/26/integration-de-lintelligence-artificielle-dans-le-droit-beninois-aivoka-la-premiere-ia-juridique-lancee-au-benin/' }],
-  },
-  {
-    num: '02', name: 'Voxaide', period: '2025 — present',
-    desc: 'Multi-tenant real-time voice-AI platform for contact centers. Sub-second telephony agents with per-tenant RAG and multi-vendor failover.',
-    tags: 'livekit · deepgram · webrtc · fastapi',
-    links: [],
-  },
-  {
-    num: '03', name: 'Beninlanguages', period: '2026 — present',
-    desc: "Open-source NLP for Benin's low-resource languages — starting with Fon→French translation, built on free compute and ethically-licensed open data.",
-    tags: 'nllb · hugging face · data',
-    links: [],
+    title: 'Embedding clickable tweets in articles',
+    date: '2026-06-15',
+    href: '/writing/embedding-tweets/',
+    excerpt: 'How this site renders real, interactive tweet cards inside posts.',
   },
 ];
+
+const fmtDate = (d) => {
+  const [y, m, day] = d.split('-');
+  return new Date(Date.UTC(+y, +m - 1, +day)).toLocaleDateString('en-US', {
+    year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC',
+  });
+};
 ---
 
 <Base>
@@ -30,75 +24,66 @@ const projects = [
     <div class="wrap nav">
       <a class="brand" href="/">Etienne Tovimafa</a>
       <nav class="nav-links">
-        <a href="#work">work</a>
-        <a href="/writing" class="hide-sm">writing</a>
-        <a href="#about">about</a>
+        <a href="#writing">writing</a>
+        <a href="https://github.com/abiotov" target="_blank" rel="noopener">github</a>
         <ThemeToggle />
       </nav>
     </div>
   </header>
 
   <main class="wrap">
-    <section class="hero">
-      <h1>Applied AI engineer building systems that reach production.</h1>
-      <p class="lede">
-        I build <b>LLM, RAG and real-time voice</b> systems. I made
-        <b>AIVOKA</b> — the first AI legal assistant launched in Benin — and
-        <b>Voxaide</b>, real-time voice agents.
-      </p>
-      <div class="hero-actions">
-        <a class="link-arrow" href="#work">View work <span class="arr">→</span></a>
-        <a class="link-arrow" href="mailto:abiodouneti@gmail.com">Get in touch <span class="arr">→</span></a>
-        <a class="link-arrow" href="https://github.com/abiotov">GitHub <span class="arr">→</span></a>
-      </div>
-      <Waveform />
-    </section>
-
-    <section id="work" class="reveal">
-      <div class="section-label">Selected work</div>
-      {projects.map((p) => (
-        <article class="work-item">
-          <div class="work-head">
-            <h2 class="work-title"><span class="num">{p.num}</span>{p.name}</h2>
-            <span class="work-period">{p.period}</span>
-          </div>
-          <p class="work-desc">{p.desc}</p>
-          <div class="work-meta">
-            <span class="tags">{p.tags}</span>
-            {p.links.length > 0 && (
-              <span class="work-links">
-                {p.links.map((l) => <a href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
-              </span>
-            )}
-          </div>
-        </article>
-      ))}
-    </section>
-
-    <section id="about" class="reveal">
-      <div class="section-label">About</div>
-      <div class="about">
-        <figure>
-          <img src="/starship-ift5.jpg" alt="SpaceX Starship igniting at liftoff during flight test IFT-5" loading="lazy" width="2308" height="2470" />
-          <figcaption>Starship IFT-5 — © Steve Jurvetson, CC BY 2.0</figcaption>
-        </figure>
-        <div class="bio">
-          <p>Self-taught AI engineer from Benin. I started in information security, then went deep on shipping LLM systems that real people use.</p>
-          <p>I care about production reliability, responsible AI, and bringing modern NLP to African languages.</p>
-          <p class="avail"><span class="dot">●</span> Open to Applied AI roles · Cotonou (UTC+1) · on-site, hybrid or remote</p>
+    <section class="bio">
+      <img class="bio-photo" src="/starship-ift5.jpg" alt="SpaceX Starship at liftoff" />
+      <div>
+        <h1>Hi, I'm Etienne.</h1>
+        <p>
+          I'm an AI engineer from Benin. I build LLM, RAG and real-time voice systems —
+          I made <strong>AIVOKA</strong>, the first AI legal assistant launched in Benin,
+          and <strong>Voxaide</strong>, real-time voice agents. I write here about building
+          AI systems that reach production.
+        </p>
+        <div class="bio-links">
+          <a href="https://github.com/abiotov" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://linkedin.com/in/etiennetovi" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="mailto:abiodouneti@gmail.com">Email</a>
         </div>
       </div>
+    </section>
+
+    <section id="writing">
+      <div class="section-label">Writing</div>
+      {posts.length === 0 ? (
+        <p class="empty-note">First posts coming soon.</p>
+      ) : (
+        posts.map((p) => (
+          <a class="post-row" href={p.href}>
+            <span class="row-top">
+              <span class="post-title">{p.title}</span>
+              <span class="post-date">{fmtDate(p.date)}</span>
+            </span>
+            {p.excerpt && <span class="post-excerpt">{p.excerpt}</span>}
+          </a>
+        ))
+      )}
+    </section>
+
+    <section>
+      <div class="section-label">Open source</div>
+      <p class="building">
+        <strong>Beninlanguages</strong> — building open NLP resources for Benin's
+        low-resource languages, starting with Fon. In progress.
+      </p>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="wrap">
       <div class="footer-links">
-        <a href="mailto:abiodouneti@gmail.com">email <span>→</span></a>
-        <a href="https://linkedin.com/in/etiennetovi" target="_blank" rel="noopener">linkedin <span>→</span></a>
-        <a href="https://github.com/abiotov" target="_blank" rel="noopener">github <span>→</span></a>
+        <a href="mailto:abiodouneti@gmail.com">email</a>
+        <a href="https://linkedin.com/in/etiennetovi" target="_blank" rel="noopener">linkedin</a>
+        <a href="https://github.com/abiotov" target="_blank" rel="noopener">github</a>
       </div>
-      <p class="colophon">© 2026 Etienne Tovimafa · built in Benin · Starship photo © Steve Jurvetson (CC BY 2.0)</p>
+      <p class="colophon">© 2026 Etienne Tovimafa · profile image: Starship IFT-5 © Steve Jurvetson (CC BY 2.0)</p>
     </div>
   </footer>
 </Base>

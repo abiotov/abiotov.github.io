@@ -3,34 +3,48 @@ import Base from '../../layouts/Base.astro';
 import ThemeToggle from '../../components/ThemeToggle.astro';
 
 const posts = [
-  { title: 'Embedding clickable tweets in articles', date: '2026-06-15', href: '/writing/embedding-tweets/' },
+  {
+    title: 'Embedding clickable tweets in articles',
+    date: '2026-06-15',
+    href: '/writing/embedding-tweets/',
+    excerpt: 'How this site renders real, interactive tweet cards inside posts.',
+  },
 ];
+
+const fmtDate = (d) => {
+  const [y, m, day] = d.split('-');
+  return new Date(Date.UTC(+y, +m - 1, +day)).toLocaleDateString('en-US', {
+    year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC',
+  });
+};
 ---
 
-<Base title="Writing — Etienne Tovimafa" description="Notes and write-ups on building AI systems in production.">
+<Base title="Writing — Etienne Tovimafa" description="Notes on building AI systems in production.">
   <header class="site-header">
     <div class="wrap nav">
       <a class="brand" href="/">Etienne Tovimafa</a>
       <nav class="nav-links">
-        <a href="/#work">work</a>
-        <a href="/writing">writing</a>
-        <a href="/#about">about</a>
+        <a href="/#writing">writing</a>
+        <a href="https://github.com/abiotov" target="_blank" rel="noopener">github</a>
         <ThemeToggle />
       </nav>
     </div>
   </header>
 
   <main class="wrap">
-    <section class="hero" style="padding-bottom:24px">
+    <section class="hero">
       <h1>Writing</h1>
-      <p class="lede">Notes and write-ups on building AI systems in production. More soon.</p>
+      <p class="lede">Notes on building AI systems in production.</p>
     </section>
 
     <section>
       {posts.map((p) => (
         <a class="post-row" href={p.href}>
-          <span class="post-title">{p.title}</span>
-          <span class="post-date">{p.date}</span>
+          <span class="row-top">
+            <span class="post-title">{p.title}</span>
+            <span class="post-date">{fmtDate(p.date)}</span>
+          </span>
+          {p.excerpt && <span class="post-excerpt">{p.excerpt}</span>}
         </a>
       ))}
     </section>
