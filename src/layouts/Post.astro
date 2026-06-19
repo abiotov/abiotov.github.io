@@ -37,8 +37,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
       <h1 class="post-h1">{title}</h1>
       {frontmatter?.description && <p class="post-sub">{frontmatter.description}</p>}
       <div class="post-meta">
-        <span>Etienne Tovimafa</span>
-        {date && <span>· {fmtDate(date)}</span>}
+        {date && <span>{fmtDate(date)}</span>}
         {readingTime && <span>· {readingTime}</span>}
       </div>
 
