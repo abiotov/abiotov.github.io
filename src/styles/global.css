@@ -44,7 +44,7 @@ strong { font-weight: 600; }
 
 /* ---------- bio ---------- */
 .bio { padding: 56px 0 36px; }
-.bio h1 { font-size: 1.5rem; margin-bottom: 12px; }
+.bio-intro { font-size: 1.05rem; font-weight: 500; line-height: 1.6; letter-spacing: 0; margin: 0 0 16px; }
 .bio p { margin: 0 0 14px; color: var(--ink); }
 .bio-links { display: flex; flex-wrap: wrap; gap: 16px; }
 .bio-links a, .footer-links a, .building a, .article a {

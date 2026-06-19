@@ -3,12 +3,7 @@ import Base from '../layouts/Base.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 
 const posts = [
-  {
-    title: 'Embedding clickable tweets in articles',
-    date: '2026-06-15',
-    href: '/writing/embedding-tweets/',
-    excerpt: 'How this site renders real, interactive tweet cards inside posts.',
-  },
+  { title: 'Embedding clickable tweets in articles', date: '2026-06-15', href: '/writing/embedding-tweets/' },
 ];
 
 const fmtDate = (d) => {
@@ -24,7 +19,6 @@ const fmtDate = (d) => {
     <div class="wrap nav">
       <a class="brand" href="/">Etienne Tovimafa</a>
       <nav class="nav-links">
-        <a href="#writing">writing</a>
         <a href="https://github.com/abiotov" target="_blank" rel="noopener">github</a>
         <ThemeToggle />
       </nav>
@@ -33,11 +27,7 @@ const fmtDate = (d) => {
 
   <main class="wrap">
     <section class="bio">
-      <h1>Hi, I'm Etienne.</h1>
-      <p>
-        I'm an AI engineer from Benin, building LLM, RAG and real-time voice systems.
-        I write here about building AI that reaches production.
-      </p>
+      <h1 class="bio-intro">Hi, I'm Etienne, an AI engineer. I write here about machine learning and AI.</h1>
       <div class="bio-links">
         <a href="https://github.com/abiotov" target="_blank" rel="noopener">GitHub</a>
         <a href="https://linkedin.com/in/etiennetovi" target="_blank" rel="noopener">LinkedIn</a>
@@ -45,32 +35,19 @@ const fmtDate = (d) => {
       </div>
     </section>
 
-    <section id="writing">
-      <div class="section-label">Writing</div>
-      {posts.length === 0 ? (
-        <p class="empty-note">First posts coming soon.</p>
-      ) : (
-        posts.map((p) => (
-          <a class="post-row" href={p.href}>
-            <span class="row-top">
-              <span class="post-title">{p.title}</span>
-              <span class="post-date">{fmtDate(p.date)}</span>
-            </span>
-            {p.excerpt && <span class="post-excerpt">{p.excerpt}</span>}
-          </a>
-        ))
-      )}
+    <section>
+      {posts.map((p) => (
+        <a class="post-row" href={p.href}>
+          <span class="row-top">
+            <span class="post-title">{p.title}</span>
+            <span class="post-date">{fmtDate(p.date)}</span>
+          </span>
+        </a>
+      ))}
     </section>
   </main>
 
   <footer class="site-footer">
-    <div class="wrap">
-      <div class="footer-links">
-        <a href="mailto:abiodouneti@gmail.com">email</a>
-        <a href="https://linkedin.com/in/etiennetovi" target="_blank" rel="noopener">linkedin</a>
-        <a href="https://github.com/abiotov" target="_blank" rel="noopener">github</a>
-      </div>
-      <p class="colophon">© 2026 Etienne Tovimafa</p>
-    </div>
+    <div class="wrap"><p class="colophon">© 2026 Etienne Tovimafa</p></div>
   </footer>
 </Base>
