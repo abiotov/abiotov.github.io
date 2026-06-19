@@ -1,33 +1,72 @@
 ---
 import Base from './Base.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
-const { frontmatter } = Astro.props;
+
+const { frontmatter, headings = [] } = Astro.props;
 const title = frontmatter?.title ?? 'Writing';
+const date = frontmatter?.date;
+const readingTime = frontmatter?.readingTime;
+
+const fmtDate = (d) => {
+  if (!d) return '';
+  const s = String(d).slice(0, 10);
+  const [y, m, day] = s.split('-');
+  return new Date(Date.UTC(+y, +m - 1, +day)).toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC',
+  });
+};
+
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
-<Base title={`${title} — Etienne Tovimafa`}>
+<Base title={`${title} — Etienne Tovimafa`} description={frontmatter?.description}>
   <header class="site-header">
     <div class="wrap nav">
       <a class="brand" href="/">Etienne Tovimafa</a>
       <nav class="nav-links">
-        <a href="/#work">work</a>
-        <a href="/writing">writing</a>
-        <a href="/#about">about</a>
+        <a href="/">home</a>
+        <a href="https://github.com/abiotov" target="_blank" rel="noopener">github</a>
         <ThemeToggle />
       </nav>
     </div>
   </header>
 
-  <main class="wrap">
-    <article class="article">
-      <a class="back-link" href="/writing">&larr; writing</a>
-      <h1 style="margin-top:18px">{title}</h1>
-      {frontmatter?.date && <span class="post-date">{frontmatter.date}</span>}
-      <slot />
+  <div class="post-wrap">
+    <article class="post">
+      <a class="back-link" href="/">&larr; home</a>
+      <h1 class="post-h1">{title}</h1>
+      {frontmatter?.description && <p class="post-sub">{frontmatter.description}</p>}
+      <div class="post-meta">
+        <span>Etienne Tovimafa</span>
+        {date && <span>· {fmtDate(date)}</span>}
+        {readingTime && <span>· {readingTime}</span>}
+      </div>
+
+      {toc.length > 0 && (
+        <details class="toc-mobile">
+          <summary>On this page</summary>
+          <ul>
+            {toc.map((h) => <li class={`toc-d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>)}
+          </ul>
+        </details>
+      )}
+
+      <div class="prose">
+        <slot />
+      </div>
     </article>
-  </main>
+
+    {toc.length > 0 && (
+      <aside class="toc">
+        <p class="toc-title">On this page</p>
+        <ul>
+          {toc.map((h) => <li class={`toc-d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>)}
+        </ul>
+      </aside>
+    )}
+  </div>
 
   <footer class="site-footer">
-    <div class="wrap"><p class="colophon">&copy; 2026 Etienne Tovimafa</p></div>
+    <div class="wrap"><p class="colophon">© 2026 Etienne Tovimafa</p></div>
   </footer>
 </Base>

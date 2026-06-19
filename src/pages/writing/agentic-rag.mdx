@@ -1,0 +1,151 @@
+---
+layout: ../../layouts/Post.astro
+title: Agentic RAG, explained
+description: From naive retrieval to systems that decide how to retrieve.
+date: 2026-06-19
+readingTime: 10 min read
+---
+
+import Callout from '../../components/Callout.astro';
+
+Naive retrieval-augmented generation (RAG) is a straight line: embed the question, pull
+the top-_k_ chunks from a vector store, paste them into the prompt, and let the model
+answer. It is a great default — and it quietly falls apart the moment a question needs
+more than one lookup.
+
+**Agentic RAG** is what you get when you stop treating retrieval as a fixed step and start
+treating it as a *decision*. Instead of always retrieving once and answering, the model
+decides whether to retrieve, what to retrieve, how to reformulate, when to look again, and
+whether its own answer is actually supported by what it found.
+
+## Where naive RAG breaks
+
+The single-shot pipeline assumes the right context fits in one retrieval against one
+source. Real questions break that assumption:
+
+- **Multi-hop questions** — "Which of the contracts signed in 2025 expires first?" needs
+  several retrievals with reasoning in between.
+- **Ambiguous queries** — short or underspecified questions embed poorly and pull noise.
+- **Heterogeneous sources** — the answer may live in a database, a PDF, or on the web, not
+  all in one index.
+- **No retrieval needed** — "thanks!" doesn't need a vector search, but a naive pipeline
+  runs one anyway.
+- **Ungrounded answers** — the most dangerous failure: a confident answer the retrieved
+  text doesn't support.
+
+<Callout title="The failure that hurts most">
+In production, the costly mistake is rarely "no answer found" — it's a fluent, confident
+answer that isn't grounded in any source. Most of what follows exists to catch that.
+</Callout>
+
+## What "agentic" actually means
+
+In agentic RAG, the model is no longer a passive generator at the end of a pipeline. It is
+a controller that takes **actions** — retrieve, re-query, call a tool, answer — in a loop,
+observes the results, and decides the next step. This is the *reason-and-act* loop
+popularized by ReAct: interleave short reasoning steps with actions instead of committing
+to a single plan up front.
+
+## Core patterns
+
+You rarely need all of these. Pick the ones your questions actually demand.
+
+### Routing: decide if and where to retrieve
+
+A lightweight router — a classifier, or the model itself — inspects the query and chooses a
+path: answer directly, search vector store A vs. B, query a SQL database, or hit the web.
+This is the idea behind *adaptive* RAG: match retrieval effort to query difficulty.
+
+### Query transformation: rewrite, expand, decompose
+
+Before retrieving, reshape the query. **Rewrite** vague or conversational questions into
+search-friendly ones (resolving pronouns, adding context). **Decompose** a multi-hop
+question into sub-questions you can answer one at a time. With **HyDE**, generate a
+hypothetical answer and embed *that* to retrieve, which often beats embedding a terse
+question.
+
+### Iterative retrieval: retrieve, reason, retrieve again
+
+For multi-hop questions, run a loop: answer a sub-question, use what you learned to ask the
+next one, gather evidence, then synthesize. Each step's output sharpens the next retrieval.
+
+### Self-correction: grade, then retry
+
+This is where most of the reliability comes from. **Grade retrieved documents** for
+relevance and drop the irrelevant ones before generating (the core of Corrective RAG).
+**Critique the draft answer** against its sources; if a claim isn't supported, retrieve
+again or revise (the idea behind Self-RAG). And **refuse when ungrounded** — returning "I
+don't have enough information" beats inventing an answer, especially in high-stakes domains.
+
+### Tool use beyond the vector store
+
+Once retrieval is just another action, the retriever becomes one tool among many: web
+search, a calculator, an internal API, a code interpreter. Agentic RAG is really a special
+case of tool-augmented generation where one of the tools happens to be a knowledge base.
+
+## A minimal agentic loop
+
+Stripped to its essence, an agentic RAG system is a small state machine:
+
+```python
+def agentic_rag(question, max_steps=3):
+    route = decide_route(question)          # answer directly? which source?
+    if route == "answer":
+        return generate(question)
+
+    docs = []
+    for _ in range(max_steps):
+        hits = retrieve(question, source=route)
+        docs = [d for d in hits if is_relevant(d, question)]   # grade
+        if docs:
+            break
+        question = rewrite(question)         # nothing useful -> reformulate
+
+    answer = generate(question, docs)
+    if not grounded(answer, docs):           # self-check against sources
+        return "I don't have enough information to answer that."
+    return answer
+```
+
+Two things make this *agentic* rather than just a longer pipeline: the loop can repeat
+retrieval based on what it sees, and the system can decide to **stop** — by answering
+directly, or by refusing.
+
+<Callout title="Bound the loop">
+Every extra step is another model call: more latency, more cost, and one more chance to
+wander. Cap the number of steps, cache aggressively, and run independent retrievals in
+parallel.
+</Callout>
+
+## The cost of agency
+
+Agency is not free, and "agentic" is not a synonym for "better":
+
+- **Latency and cost** grow with every reasoning and retrieval step. A loop that *can* run
+  five times can also *take* five times as long.
+- **Evaluation gets harder.** You now have to measure retrieval quality *and* answer
+  faithfulness — ideally automatically, on a fixed benchmark, on every change, so a
+  "smarter" prompt doesn't silently regress citations.
+- **More moving parts** means more ways to fail. Each router, grader, and rewrite step is
+  another thing to test and keep honest.
+
+## When to use it
+
+Reach for agentic RAG when questions are **multi-hop**, span **multiple sources**, are
+**ambiguous**, or live in a **high-stakes domain** where citations and verification matter.
+Stick with naive RAG for simple, single-fact lookups — it is faster, cheaper, and easier to
+reason about.
+
+The pragmatic path is to start with the simplest pipeline that works and add agency only
+where a real failure mode forces you to. Routing and document grading buy the most
+reliability for the least complexity; full multi-step planning is worth it only when your
+questions genuinely need it.
+
+## References
+
+1. Lewis et al. (2020). *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.* NeurIPS.
+2. Yao et al. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models.* ICLR.
+3. Asai et al. (2023). *Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection.*
+4. Yan et al. (2024). *Corrective Retrieval-Augmented Generation (CRAG).*
+5. Gao et al. (2023). *Retrieval-Augmented Generation for Large Language Models: A Survey.*
+6. Anthropic (2024). *Building Effective Agents.*
