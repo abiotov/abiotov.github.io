@@ -1,74 +1,92 @@
 ---
-// Fig 2 — the memory lifecycle taxonomy (construction / management / access).
+// Fig 2 — the memory lifecycle, draw.io visual style: colored stage headers
+// (yellow/blue/green pairs), white cards with stage-colored borders, dotted
+// design-question boxes. Editable source: diagrams/fig2-lifecycle.drawio.
 const { num = '2' } = Astro.props;
+const ink = '#2d2d2d';
+const sub = '#6e6e6e';
 ---
 <figure class="fig">
-  <svg viewBox="0 0 720 330" role="img" aria-label="Taxonomy of agent memory as a lifecycle with three stages: construction (textual, latent, parametric), management (rule-based, LLM-based, hybrid) and access (selection and integration), with example systems under each.">
+  <svg viewBox="0 0 720 350" role="img" aria-label="Taxonomy of agent memory as a lifecycle with three stages: construction (textual, latent, parametric), management (rule-based, LLM-based, hybrid) and access (selection and integration), each with example systems and a design question.">
     <defs>
-      <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
         <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--muted)"></path>
       </marker>
     </defs>
 
-    <!-- three stage headers -->
-    <rect x="16" y="16" width="212" height="40" rx="8" fill="var(--ink)"></rect>
-    <text x="122" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="var(--bg)">1 · Construction</text>
+    <!-- headers: drawio color pairs -->
+    <rect x="14" y="14" width="216" height="42" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.8"></rect>
+    <text x="122" y="40" text-anchor="middle" font-size="14.5" font-weight="700" fill={ink}>1 · Construction</text>
 
-    <rect x="254" y="16" width="212" height="40" rx="8" fill="var(--ink)"></rect>
-    <text x="360" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="var(--bg)">2 · Management</text>
+    <rect x="252" y="14" width="216" height="42" rx="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1.8"></rect>
+    <text x="360" y="40" text-anchor="middle" font-size="14.5" font-weight="700" fill={ink}>2 · Management</text>
 
-    <rect x="492" y="16" width="212" height="40" rx="8" fill="var(--ink)"></rect>
-    <text x="598" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="var(--bg)">3 · Access</text>
+    <rect x="490" y="14" width="216" height="42" rx="8" fill="#d5e8d4" stroke="#82b366" stroke-width="1.8"></rect>
+    <text x="598" y="40" text-anchor="middle" font-size="14.5" font-weight="700" fill={ink}>3 · Access</text>
 
-    <line x1="228" y1="36" x2="250" y2="36" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arr2)"></line>
-    <line x1="466" y1="36" x2="488" y2="36" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arr2)"></line>
+    <line x1="230" y1="35" x2="248" y2="35" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrC)"></line>
+    <line x1="468" y1="35" x2="486" y2="35" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrC)"></line>
 
-    <!-- construction column -->
-    <rect x="16" y="72" width="212" height="128" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
-    <text x="28" y="94" font-size="12.5" font-weight="600" fill="var(--ink)">textual</text>
-    <text x="28" y="112" font-size="11.5" fill="var(--muted)">prompt-resident · items · graphs ·</text>
-    <text x="28" y="127" font-size="11.5" fill="var(--muted)">hierarchies (Mem0, A-MEM, Zep,</text>
-    <text x="28" y="142" font-size="11.5" fill="var(--muted)">MemGPT, MemoryOS)</text>
-    <text x="28" y="164" font-size="12.5" font-weight="600" fill="var(--ink)">latent</text>
-    <text x="83" y="164" font-size="11.5" fill="var(--muted)">KV states (MemoRAG)</text>
-    <text x="28" y="186" font-size="12.5" font-weight="600" fill="var(--ink)">parametric</text>
-    <text x="112" y="186" font-size="11.5" fill="var(--muted)">weights (Titans)</text>
+    <!-- construction cards -->
+    <rect x="14" y="70" width="216" height="76" rx="8" fill="#ffffff" stroke="#d6b656" stroke-width="1.5"></rect>
+    <text x="26" y="90" font-size="12.5" font-weight="700" fill={ink}>textual</text>
+    <text x="26" y="107" font-size="11" fill={sub}>prompt-resident · items · graphs ·</text>
+    <text x="26" y="121" font-size="11" fill={sub}>hierarchies</text>
+    <text x="26" y="137" font-size="10.5" fill={sub}>Mem0 · A-MEM · Zep · MemGPT</text>
 
-    <rect x="16" y="212" width="212" height="52" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
-    <text x="28" y="232" font-size="12" font-weight="600" fill="var(--ink)">design question</text>
-    <text x="28" y="250" font-size="11.5" fill="var(--muted)">how lossy can the write be?</text>
+    <rect x="14" y="154" width="216" height="42" rx="8" fill="#ffffff" stroke="#d6b656" stroke-width="1.5"></rect>
+    <text x="26" y="172" font-size="12.5" font-weight="700" fill={ink}>latent</text>
+    <text x="80" y="172" font-size="11" fill={sub}>KV states</text>
+    <text x="26" y="188" font-size="10.5" fill={sub}>MemoRAG · MemGen</text>
 
-    <!-- management column -->
-    <rect x="254" y="72" width="212" height="128" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
-    <text x="266" y="94" font-size="12.5" font-weight="600" fill="var(--ink)">rule-based</text>
-    <text x="266" y="112" font-size="11.5" fill="var(--muted)">decay, FIFO: cheap, blind</text>
-    <text x="266" y="134" font-size="12.5" font-weight="600" fill="var(--ink)">LLM-based</text>
-    <text x="266" y="152" font-size="11.5" fill="var(--muted)">semantic, costly, can corrupt</text>
-    <text x="266" y="174" font-size="12.5" font-weight="600" fill="var(--ink)">hybrid</text>
-    <text x="266" y="192" font-size="11.5" fill="var(--muted)">triggers + LLM consolidation</text>
+    <rect x="14" y="204" width="216" height="42" rx="8" fill="#ffffff" stroke="#d6b656" stroke-width="1.5"></rect>
+    <text x="26" y="222" font-size="12.5" font-weight="700" fill={ink}>parametric</text>
+    <text x="110" y="222" font-size="11" fill={sub}>weights</text>
+    <text x="26" y="238" font-size="10.5" fill={sub}>MemoryLLM · Titans</text>
 
-    <rect x="254" y="212" width="212" height="52" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
-    <text x="266" y="232" font-size="12" font-weight="600" fill="var(--ink)">design question</text>
-    <text x="266" y="250" font-size="11.5" fill="var(--muted)">which update is worth its cost?</text>
+    <rect x="14" y="256" width="216" height="40" rx="8" fill="none" stroke="var(--faint)" stroke-width="1.3" stroke-dasharray="1.5 3"></rect>
+    <text x="122" y="274" text-anchor="middle" font-size="10.5" fill="var(--faint)" letter-spacing="0.5">DESIGN QUESTION</text>
+    <text x="122" y="289" text-anchor="middle" font-size="11.5" fill="var(--muted)">how lossy can the write be?</text>
 
-    <!-- access column -->
-    <rect x="492" y="72" width="212" height="128" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
-    <text x="504" y="94" font-size="12.5" font-weight="600" fill="var(--ink)">selection</text>
-    <text x="504" y="112" font-size="11.5" fill="var(--muted)">similarity + recency + importance,</text>
-    <text x="504" y="127" font-size="11.5" fill="var(--muted)">graph traversal, learned utility</text>
-    <text x="504" y="142" font-size="11.5" fill="var(--muted)">(RMM, Memento, MemRL)</text>
-    <text x="504" y="164" font-size="12.5" font-weight="600" fill="var(--ink)">integration</text>
-    <text x="504" y="182" font-size="11.5" fill="var(--muted)">compact blocks, playbooks,</text>
-    <text x="504" y="197" font-size="11.5" fill="var(--muted)">KV injection</text>
+    <!-- management cards -->
+    <rect x="252" y="70" width="216" height="52" rx="8" fill="#ffffff" stroke="#6c8ebf" stroke-width="1.5"></rect>
+    <text x="264" y="90" font-size="12.5" font-weight="700" fill={ink}>rule-based</text>
+    <text x="352" y="90" font-size="11" fill={sub}>decay · FIFO</text>
+    <text x="264" y="108" font-size="10.5" fill={sub}>cheap, predictable, blind</text>
 
-    <rect x="492" y="212" width="212" height="52" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
-    <text x="504" y="232" font-size="12" font-weight="600" fill="var(--ink)">design question</text>
-    <text x="504" y="250" font-size="11.5" fill="var(--muted)">is similarity actually utility?</text>
+    <rect x="252" y="130" width="216" height="52" rx="8" fill="#ffffff" stroke="#6c8ebf" stroke-width="1.5"></rect>
+    <text x="264" y="150" font-size="12.5" font-weight="700" fill={ink}>LLM-based</text>
+    <text x="352" y="150" font-size="11" fill={sub}>semantic CRUD</text>
+    <text x="264" y="168" font-size="10.5" fill={sub}>task-aware, costly, corrupts silently</text>
+
+    <rect x="252" y="190" width="216" height="52" rx="8" fill="#ffffff" stroke="#6c8ebf" stroke-width="1.5"></rect>
+    <text x="264" y="210" font-size="12.5" font-weight="700" fill={ink}>hybrid</text>
+    <text x="316" y="210" font-size="11" fill={sub}>triggers + LLM consolidation</text>
+    <text x="264" y="228" font-size="10.5" fill={sub}>MemoryOS · LightMem · Zep</text>
+
+    <rect x="252" y="256" width="216" height="40" rx="8" fill="none" stroke="var(--faint)" stroke-width="1.3" stroke-dasharray="1.5 3"></rect>
+    <text x="360" y="274" text-anchor="middle" font-size="10.5" fill="var(--faint)" letter-spacing="0.5">DESIGN QUESTION</text>
+    <text x="360" y="289" text-anchor="middle" font-size="11.5" fill="var(--muted)">which update is worth its cost?</text>
+
+    <!-- access cards -->
+    <rect x="490" y="70" width="216" height="76" rx="8" fill="#ffffff" stroke="#82b366" stroke-width="1.5"></rect>
+    <text x="502" y="90" font-size="12.5" font-weight="700" fill={ink}>selection</text>
+    <text x="502" y="107" font-size="11" fill={sub}>similarity + recency + importance,</text>
+    <text x="502" y="121" font-size="11" fill={sub}>graph traversal, learned utility</text>
+    <text x="502" y="137" font-size="10.5" fill={sub}>RMM · Memento · MemRL</text>
+
+    <rect x="490" y="154" width="216" height="52" rx="8" fill="#ffffff" stroke="#82b366" stroke-width="1.5"></rect>
+    <text x="502" y="174" font-size="12.5" font-weight="700" fill={ink}>integration</text>
+    <text x="502" y="192" font-size="10.5" fill={sub}>compact blocks · playbooks · KV injection</text>
+
+    <rect x="490" y="256" width="216" height="40" rx="8" fill="none" stroke="var(--faint)" stroke-width="1.3" stroke-dasharray="1.5 3"></rect>
+    <text x="598" y="274" text-anchor="middle" font-size="10.5" fill="var(--faint)" letter-spacing="0.5">DESIGN QUESTION</text>
+    <text x="598" y="289" text-anchor="middle" font-size="11.5" fill="var(--muted)">is similarity actually utility?</text>
 
     <!-- bottom note -->
-    <text x="360" y="300" text-anchor="middle" font-size="12" fill="var(--muted)">optimizing one stage in isolation moves the cost to another stage</text>
-    <path d="M 122 264 C 122 288, 240 296, 300 298" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"></path>
-    <path d="M 598 264 C 598 288, 480 296, 420 298" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"></path>
+    <text x="360" y="330" text-anchor="middle" font-size="12" fill="var(--muted)">optimizing one stage in isolation moves the cost to another stage</text>
+    <path d="M 122 296 C 122 316, 230 324, 290 327" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"></path>
+    <path d="M 598 296 C 598 316, 490 324, 430 327" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"></path>
   </svg>
   <figcaption><strong>Fig. {num}.</strong> Agent memory as a lifecycle, following the framing of <a href="https://arxiv.org/abs/2601.14192">Toward Efficient Agents</a>. Skills (procedural memory) and multi-agent stores run the same lifecycle one level up.</figcaption>
 </figure>
