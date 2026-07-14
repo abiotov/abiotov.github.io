@@ -1,0 +1,277 @@
+---
+layout: ../../layouts/Post.astro
+title: "Agent memory: what exists, what breaks, and what nobody measures"
+description: A field guide to memory for LLM agents, with the benchmark numbers fact-checked.
+date: 2026-07-14
+readingTime: 17 min read
+---
+
+import Callout from '../../components/Callout.astro';
+
+Every agent framework now ships a "memory" feature, every vendor claims state-of-the-art
+recall, and every demo shows an assistant that remembers your dog's name. Meanwhile, the
+same system's published benchmark score moves by 15 to 25 points depending on who runs the
+evaluation, and the most-cited memory benchmark turns out to have a broken answer key.
+
+I spent the last week going deep on this: reading the surveys, tracing the papers, and
+fact-checking the headline numbers against primary sources (every number below survived
+that check unless I say otherwise). This post is the map I wish I'd had at the start:
+what exists, what's actually broken, and what the evidence says about where memory is
+going next.
+
+## Why memory is the lever that moves everything
+
+A useful way to think about agent cost, adapted from the *Toward Efficient Agents* survey
+(arXiv:2601.14192):
+
+```
+Cost_agent ≈ α·N_tokens + tool_calls·Cost_tool + memory_ops·Cost_mem + retries·Cost_retry
+```
+
+An agent loop compounds tokens: the output of step n becomes input cost of step n+1.
+Memory is the only component that can cut every term at once. Remembered constraints mean
+fewer retries. Cached tool outcomes mean fewer redundant calls. Reusable plans mean
+shallower planning. A compact retrieved context means fewer tokens per step.
+
+That survey's framing, which I'll borrow throughout, is a lifecycle: **construction**
+(how raw experience becomes stored memory), **management** (how the store stays healthy
+over time), and **access** (how the right memories get back into the context). The trap
+is optimizing one stage in isolation. Compress too hard at write time and you pay for
+repairs later. Skip maintenance and retrieval drowns in noise. Retrieve with high recall
+and you recreate the exact long-context cost memory was supposed to eliminate.
+
+## A map of what exists
+
+### Construction: three ways to store experience
+
+**Textual memory** is the practical mainstream: memory as readable text or structured
+records. Four sub-families, roughly in order of increasing structure:
+
+- **Prompt-resident**: a compact state continuously rewritten inside the context window.
+  MemAgent overwrites a running summary per chunk; MEM1 trains the rewriting itself with
+  RL; AgentFold folds history into multi-scale summaries.
+- **Item-based**: discrete units in an external store. Mem0 extracts candidate facts and
+  applies ADD/UPDATE/DELETE/NOOP operations; A-MEM keeps Zettelkasten-style atomic notes
+  that link to and rewrite each other; ReasoningBank distills strategies from successful
+  AND failed trajectories; ACE maintains a playbook of strategy bullets with
+  helpful/harmful counters.
+- **Graph-based**: entities and relations as nodes and edges. Zep builds a temporal
+  knowledge graph where facts carry validity intervals; AriGraph links a semantic layer
+  to episodic observations; MAGMA maintains four parallel graphs (semantic, temporal,
+  causal, entity).
+- **Hierarchical**: explicit tiers with promotion and eviction. MemGPT treats the context
+  window like RAM and external storage like disk, with the model paging via tool calls;
+  MemoryOS runs short/mid/long-term tiers with heat scores; LightMem adds offline
+  "sleep-time" consolidation.
+
+**Latent memory** stores experience as neural activations instead of text: compressed
+KV-cache states (Activation Beacon, MemoRAG), or on-demand latent injections (MemGen,
+where an RL-trained trigger decides when to weave memory into the reasoning stream).
+
+**Parametric memory** goes further and writes experience into weights: MemoryLLM bolts a
+self-updating memory pool onto a frozen backbone; Titans trains a neural memory module at
+test time, writing hard only when prediction error is high (a "surprise" signal).
+
+<Callout title="The trade nobody escapes">
+Latent and parametric memory save tokens and prefill cost, but the stored knowledge
+becomes opaque: you can't inspect it, edit it, cite it, or take it with you when you swap
+models. Text is expensive but auditable. Every system on this map is picking a point on
+that line.
+</Callout>
+
+Two independent 2026 surveys (arXiv:2602.06052, arXiv:2512.16301) converge on the same
+taxonomy, which tells you the field is stabilizing: memory splits by substrate (internal
+vs external), by cognitive role (episodic, semantic, working, procedural), and by
+architecture family (hierarchical/OS-style, reflection-driven, graph-structured), with
+each family trading recall speed against associative richness.
+
+### Management: keeping the store from rotting
+
+Three regimes:
+
+- **Rule-based**: Ebbinghaus-style decay, FIFO eviction, capacity caps. Cheap and
+  predictable, but rules are proxies for usefulness, and bad proxies at that (more on
+  this below).
+- **LLM-based**: the model itself decides what to add, merge, rewrite, or delete.
+  Task-aware, but every maintenance decision now costs a model call, and a bad merge
+  silently corrupts the store.
+- **Hybrid**: cheap triggers for routine operations, LLM judgment reserved for
+  consolidation and conflict resolution. This is where most production-minded designs
+  land (MemoryOS, LightMem, MemGPT's queue manager, Zep's conflict handling).
+
+### Access: the part that decides whether memory helps or hurts
+
+Retrieval failure is asymmetric. Miss one critical memory and the agent acts wrong or
+re-explores what it already knew. Retrieve too much and you've rebuilt the context bloat
+you were escaping. The interesting frontier here is **trained retrieval**: similarity
+search returns what looks alike, not what helps. RMM learns a reranker online from
+outcome signals; Memento learns a Q-function over past cases; MemRL retrieves by
+similarity first, then filters by learned utility. The lesson repeats across papers:
+*similarity is not utility*.
+
+### Two extensions worth knowing
+
+**Skills as procedural memory.** Instead of remembering what happened, store how to act:
+extracted procedures, verified before reuse (Trace2Skill, SkillRL, CoEvoSkills). The
+economics are amortization: a skill costs once and pays back across recurring tasks, but
+an unmanaged skill library becomes its own retrieval overhead.
+
+**Multi-agent memory.** Shared pools reduce duplicated exploration but introduce
+concurrent-write conflicts, staleness, and noise; local memories are clean but isolate
+discoveries. The mostly unsolved parts: provenance (who wrote this and from what
+evidence?) and access control.
+
+## The benchmark reality check
+
+This is the section I most wanted someone else to have written. The short version:
+**do not trust any memory benchmark number without checking the judge, the
+configuration, and the benchmark itself.**
+
+Some verified data points:
+
+- **Vendor marketing vs vendor papers.** Mem0's research page (July 2026) advertises 92.5
+  overall accuracy on LoCoMo. Mem0's own peer-reviewed paper (arXiv:2504.19413, April
+  2025) reports 67.13 for Mem0 and 68.44 for its graph variant on the same benchmark,
+  LLM-as-judge. The marketing figure discloses no judge model, and a GitHub issue
+  (mem0ai/mem0#3944) documents a failed independent reproduction.
+- **The Zep vs Mem0 exchange.** Zep argues Mem0's comparison misconfigured it and
+  publishes a corrected 75.14 ± 0.17 on LoCoMo (vs the 65.99 Mem0 reported for Zep).
+  Mem0 re-audits Zep's earlier 84% claim and gets 58.44 ± 0.20 across 10 seeds. Same
+  system, four published numbers spanning 25 points, depending on who runs the harness.
+- **The benchmark itself is broken.** A systematic audit by Penfield Labs found 99
+  score-corrupting errors in LoCoMo's 1,540-question answer key (6.4%): hallucinated
+  facts, wrong dates, wrong speaker attributions. Worse: the commonly used gpt-4o-mini
+  judge accepted **62.81% of intentionally wrong but on-topic answers**. Score
+  differences smaller than that are noise dressed as results.
+- **The serious benchmark tells a harder story.** LongMemEval (arXiv:2410.10813, ICLR
+  2025) tests five abilities: information extraction, multi-session reasoning, temporal
+  reasoning, knowledge updates, and abstention. Its finding: long-context models drop 30
+  to 60% accuracy versus an oracle, and even dedicated memory systems fail hardest on
+  **temporal ordering** and **knowledge updates**. Those two failure modes are, in my
+  view, the design targets for the next generation.
+- **Scale quietly degrades everything.** On the third-party BEAM benchmark (ICLR 2026),
+  Mem0 self-reports 64.1 at 1M tokens of history and 48.6 at 10M (different question
+  sets, so read directionally, but Mem0 itself concedes the memory system "cannot always
+  surface the exact correct memory" at that scale).
+- **Nobody measures the lifecycle.** As of early 2026, no benchmark measured whether a
+  memory store *improves with use* or *degrades by drift* over its lifetime, which is the
+  entire premise of the product category. This gap is only now starting to close
+  (DriftBench, arXiv:2605.10990; Library Drift, arXiv:2605.19576).
+
+<Callout title="How to read any memory benchmark claim">
+Ask four questions. Which judge model, with what prompt, validated how? Who configured
+the competing systems, and did those vendors review the configs? Is the answer key
+audited? Are cost, latency, and inserted tokens reported next to accuracy? As of
+mid-2026, I have not found a single published comparison that clears all four.
+</Callout>
+
+## Twelve documented ways current systems break
+
+Each of these is grounded in either the surveys or verified primary sources; none is
+speculation.
+
+1. **Errors are cumulative and persistent.** In write-enabled memory, one wrong write
+   contaminates every future read. Static RAG confines an error to one retrieval; memory
+   compounds it (argued formally in the SSGM paper arXiv:2603.11768, measured empirically
+   in arXiv:2505.16067, and given a great name, "Zombie Agents", by arXiv:2602.15654).
+2. **Semantic drift by re-encoding.** Raw text becomes a summary, the summary becomes a
+   reflection, and each hop strips nuance until the stored "fact" diverges from what
+   actually happened (measured in MemGPT/Mem0-style pipelines by arXiv:2512.13564).
+3. **Memory poisoning is an open attack surface.** Malicious content written into memory
+   persists and reactivates later. Attacks are documented, defenses are early, and no
+   deployed system has a satisfying answer.
+4. **Naive forgetting destroys performance.** A-MEM's ablation is the cleanest evidence:
+   Ebbinghaus-style time decay controls store size and latency, and substantially hurts
+   task performance. Time since last access is a bad proxy for value.
+5. **Over-compression loses decision-critical detail.** LightMem shows accuracy falling
+   as compression rises. The right objective is task-aware: preserve causal facts,
+   constraints, failures, and procedures, not just "make it shorter".
+6. **LLM-based maintenance is expensive and fragile.** Synchronous per-turn updates
+   multiply calls and latency, and a single bad merge corrupts silently.
+7. **Similarity is not utility.** As the store grows, embedding search increasingly
+   returns semantically close but useless items.
+8. **Costs escalate with lifetime.** Without explicit dedup, selective retention, and
+   pruning, storage and indexing costs grow until they eat the efficiency gains.
+9. **Temporal reasoning and knowledge updates are the weakest abilities**, per
+   LongMemEval, and most stores have no first-class notion of validity intervals or
+   superseding facts.
+10. **Latent/parametric memory trades away auditability**, and may just relocate drift
+    into catastrophic forgetting inside weights (open question; no solid numbers exist
+    for this family yet).
+11. **Multi-agent shared memory lacks provenance and access control.**
+12. **Evaluation itself is broken**, per the previous section, which means a system can
+    look state-of-the-art and be worse in production.
+
+## Directions that actually have evidence behind them
+
+Filtering for ideas with verified numbers or at least peer review, rather than vibes:
+
+- **Sleep-time compute** (Letta and UC Berkeley, arXiv:2504.13171). Let the system think
+  about its context offline, before queries arrive. Reported: roughly 5x less test-time
+  compute at equal accuracy, up to +13/+18% accuracy when scaling offline compute, and
+  2.5x lower average cost when amortized across related queries. Caveats worth stating:
+  the authors built the benchmarks, the founders of Letta are co-authors, and I found no
+  independent replication yet. Still, it directly attacks the update-cost problem.
+- **Learning the memory policy with RL** (Memory-R1, ACL 2026, arXiv:2508.19828). Train
+  the memory manager (ADD/UPDATE/DELETE/NOOP) and the answering agent with outcome reward
+  only. It took just 152 training QA pairs to beat strong baselines and generalize across
+  three benchmarks and model scales from 3B to 14B. A successor (Memory-R2) already
+  improves on it. The lesson generalizes: hand-written memory heuristics are the thing to
+  replace.
+- **Governed evolving memory** (SSGM, arXiv:2603.11768, a design framework, not an
+  implemented system). Decouple memory evolution from execution; admit only updates
+  consistent with protected core facts; decay by relevance under an explicit function;
+  periodically reconcile mutable memory against an immutable ledger. Cite it as an
+  argument, not a result, but the argument is sound and matches the failure modes above.
+- **Value-aware retrieval** (RMM, Memento, MemRL): retrieval that learns from outcomes
+  which memories actually helped, instead of trusting cosine similarity.
+- **Temporal-causal structure** (Zep's validity intervals, MAGMA's temporal and causal
+  graphs): the structural answer to the temporal-reasoning failure mode, though
+  demonstrated results are still thin.
+- **Verified self-evolving skills** (CoEvoSkills, SkillOS): procedural memory that
+  improves with use, with a verification gate before anything gets reused.
+
+## Where this leaves us
+
+Three takeaways I'd defend:
+
+**First, the memory problem is real but mis-measured.** The gap between what vendors
+claim and what anyone can verify is wider in agent memory than in any adjacent area I
+know. The most useful contribution right now may not be another memory system; it's
+trustworthy measurement.
+
+**Second, the design principles are converging.** Across dozens of papers the same rules
+keep re-emerging: gate writes selectively, never let summaries be the only copy of the
+truth, compress the index rather than the evidence, treat updates as decisions with
+costs, learn retrieval from outcomes, and give time a first-class representation. A
+system that took all six seriously would look quite different from anything shipping
+today.
+
+**Third, the lifecycle is the open frontier.** Whether a memory gets better or worse
+with use is the question that decides if this product category delivers, and until
+mid-2026 nobody was even measuring it.
+
+I'm acting on the first takeaway: I've started building an independent,
+pre-registered benchmark of the commercial memory systems, with an adversarially
+validated judge and full cost accounting, methodology published before any results.
+That's the next post.
+
+## References
+
+- Yang et al., ["Toward Efficient Agents: A Survey of Memory, Tool Use, and Planning"](https://arxiv.org/abs/2601.14192), 2026
+- ["Rethinking Memory Mechanisms of Foundation Agents"](https://arxiv.org/abs/2602.06052) (survey), 2026
+- [Memory survey, arXiv:2512.16301](https://arxiv.org/abs/2512.16301), 2025
+- Wu et al., ["LongMemEval"](https://arxiv.org/abs/2410.10813), ICLR 2025
+- Penfield Labs, ["We audited LoCoMo"](https://dev.to/penfieldlabs/we-audited-locomo-64-of-the-answer-key-is-wrong-and-the-judge-accepts-up-to-63-of-intentionally-33lg), 2026, with the [audit repo](https://github.com/dial481/locomo-audit)
+- Chhikara et al., ["Mem0"](https://arxiv.org/abs/2504.19413), 2025; [Zep's rebuttal](https://blog.getzep.com/lies-damn-lies-statistics-is-mem0-really-sota-in-agent-memory/); [Mem0's counter-audit](https://github.com/getzep/zep-papers/issues/5)
+- ["BEAM: Beyond a Million Tokens"](https://arxiv.org/abs/2510.27246), ICLR 2026
+- Xu et al., ["A-MEM: Agentic Memory"](https://arxiv.org/abs/2502.12110), NeurIPS 2025
+- Lin et al., ["Sleep-time Compute"](https://arxiv.org/abs/2504.13171), 2025
+- Yan et al., ["Memory-R1"](https://arxiv.org/abs/2508.19828), ACL 2026
+- Lam et al., ["Governing Evolving Memory in LLM Agents (SSGM)"](https://arxiv.org/abs/2603.11768), 2026
+- Packer et al., ["MemGPT"](https://arxiv.org/abs/2310.08560), 2023
+- Rasmussen et al., ["Zep: Temporal Knowledge Graph Architecture for Agent Memory"](https://arxiv.org/abs/2501.13956), 2025
+
+---
+
+*Written by Etienne Tovimafa. Code and ideas at [github.com/abiotov](https://github.com/abiotov).*
