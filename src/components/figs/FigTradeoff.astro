@@ -1,35 +1,32 @@
 ---
-// Fig 4 — the substrate trade-off axis: auditability vs token economy.
-const { num = '4' } = Astro.props;
+// Fig 3 — the substrate trade-off axis. Three points, big text.
+const { num = '3' } = Astro.props;
 ---
 <figure class="fig">
-  <svg viewBox="0 0 720 200" role="img" aria-label="Axis diagram: textual memory sits at the auditable and portable end, parametric memory at the token-cheap but opaque end, latent memory in between.">
+  <svg viewBox="0 0 720 190" role="img" aria-label="Axis diagram: textual memory sits at the auditable and portable end, parametric memory at the token-cheap but opaque end, latent memory in between.">
     <defs>
-      <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <marker id="f3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
         <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--muted)"></path>
       </marker>
     </defs>
 
-    <line x1="60" y1="100" x2="660" y2="100" stroke="var(--muted)" stroke-width="1.5" marker-start="url(#arr3)" marker-end="url(#arr3)"></line>
+    <line x1="70" y1="110" x2="650" y2="110" stroke="var(--muted)" stroke-width="2" marker-start="url(#f3a)" marker-end="url(#f3a)"></line>
 
-    <text x="60" y="52" font-size="12" font-weight="600" fill="var(--ink)">auditable · editable · citable</text>
-    <text x="60" y="68" font-size="12" fill="var(--muted)">survives a model swap</text>
-    <text x="660" y="52" text-anchor="end" font-size="12" font-weight="600" fill="var(--ink)">token-cheap · low prefill</text>
-    <text x="660" y="68" text-anchor="end" font-size="12" fill="var(--muted)">opaque, locked to one model</text>
+    <text x="60" y="42" font-size="16" font-weight="600" fill="var(--ink)">auditable, editable,</text>
+    <text x="60" y="64" font-size="16" font-weight="600" fill="var(--ink)">survives a model swap</text>
+    <text x="660" y="42" text-anchor="end" font-size="16" font-weight="600" fill="var(--ink)">token-cheap,</text>
+    <text x="660" y="64" text-anchor="end" font-size="16" font-weight="600" fill="var(--ink)">opaque, model-locked</text>
 
-    <circle cx="130" cy="100" r="7" fill="var(--ink)"></circle>
-    <text x="130" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">textual</text>
-    <text x="130" y="149" text-anchor="middle" font-size="11.5" fill="var(--muted)">Mem0 · Zep · MemGPT</text>
+    <circle cx="140" cy="110" r="9" fill="var(--ink)"></circle>
+    <text x="140" y="148" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink)">textual</text>
 
-    <circle cx="392" cy="100" r="7" fill="none" stroke="var(--ink)" stroke-width="2"></circle>
-    <text x="392" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">latent</text>
-    <text x="392" y="149" text-anchor="middle" font-size="11.5" fill="var(--muted)">MemoRAG · MemGen</text>
+    <circle cx="390" cy="110" r="9" fill="none" stroke="var(--ink)" stroke-width="2.5"></circle>
+    <text x="390" y="148" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink)">latent</text>
 
-    <circle cx="620" cy="100" r="7" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="3 3"></circle>
-    <text x="620" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">parametric</text>
-    <text x="620" y="149" text-anchor="middle" font-size="11.5" fill="var(--muted)">MemoryLLM · Titans</text>
+    <circle cx="610" cy="110" r="9" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="4 3"></circle>
+    <text x="610" y="148" text-anchor="middle" font-size="18" font-weight="600" fill="var(--ink)">parametric</text>
 
-    <text x="360" y="184" text-anchor="middle" font-size="12" fill="var(--muted)">every memory system is a point on this line, whether it says so or not</text>
+    <text x="360" y="182" text-anchor="middle" font-size="14" fill="var(--muted)">every memory system is a point on this line, whether it says so or not</text>
   </svg>
-  <figcaption><strong>Fig. {num}.</strong> The substrate trade-off. Text costs tokens but can be inspected, corrected and carried between models; weights are cheap to read but impossible to audit. Most production systems today sit at the textual end for exactly this reason.</figcaption>
+  <figcaption><strong>Fig. {num}.</strong> The substrate trade-off. Text (Mem0, Zep, MemGPT) costs tokens but can be inspected, corrected and carried between models; weights (MemoryLLM, Titans) are cheap to read but impossible to audit; latent states (MemoRAG) sit in between. Production systems cluster at the textual end, and that is not an accident.</figcaption>
 </figure>

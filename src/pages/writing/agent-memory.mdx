@@ -202,63 +202,45 @@ not found a single published comparison, academic or commercial, that clears all
 
 ## Twelve documented ways current systems break
 
-Everything below is grounded in either the surveys or a verified primary source. I've
-ordered them roughly by how underappreciated I think they are.
+Everything in this table is grounded in the surveys or a verified primary source;
+nothing is speculation. Scan it, then I'll go deeper on the four that I think are most
+underappreciated.
 
-**1. Errors are cumulative and persistent.** This is *the* structural difference from
-RAG. A retrieval error in RAG is confined to one query; in write-enabled memory, one
-wrong write contaminates every future read that touches it. The
-[SSGM paper](https://arxiv.org/abs/2603.11768) makes the argument formally, error
-propagation has been [measured empirically](https://arxiv.org/abs/2505.16067), and one
-paper found corrupted memories that persist and self-reinforce, earning the best title
-of the year: [Zombie Agents](https://arxiv.org/abs/2602.15654).
+| # | Failure mode | In one sentence | Evidence |
+|---|---|---|---|
+| 1 | Cumulative errors | One wrong write contaminates every future read | [SSGM](https://arxiv.org/abs/2603.11768), [measured](https://arxiv.org/abs/2505.16067) |
+| 2 | Semantic drift | Each re-summarization strips nuance until the "fact" is wrong | [arXiv:2512.13564](https://arxiv.org/abs/2512.13564) |
+| 3 | Memory poisoning | Injected content persists and reactivates across sessions | [attacks](https://arxiv.org/abs/2601.05504), [defenses](https://arxiv.org/abs/2605.23723) |
+| 4 | Naive forgetting | Time-decay pruning tanks task performance | A-MEM ablation |
+| 5 | Over-compression | Accuracy falls as compression rises | LightMem |
+| 6 | Costly maintenance | Per-turn LLM updates multiply cost; bad merges fail silently | survey |
+| 7 | Similarity is not utility | Retrieval returns look-alikes, not what helps | RMM, [Memento](https://arxiv.org/abs/2508.16153), MemRL |
+| 8 | Lifetime cost creep | Without pruning, indexing overhead eats the gains | [survey](https://arxiv.org/abs/2602.06052) |
+| 9 | Time is second-class | No validity intervals, no superseding facts, no event order | [LongMemEval](https://arxiv.org/abs/2410.10813) |
+| 10 | Opaque substrates | Latent/parametric memory can't be audited or migrated | open question |
+| 11 | No provenance | Shared multi-agent stores: who wrote this, from what? | survey |
+| 12 | Broken evaluation | Corrupted keys, permissive judges, vendor harnesses | previous section |
 
-**2. Semantic drift by re-encoding.** Raw text becomes a summary, the summary becomes a
-reflection, and every hop strips nuance until the stored "fact" no longer matches what
-happened; [measured](https://arxiv.org/abs/2512.13564) in MemGPT/Mem0-style pipelines.
-The mechanism should feel familiar: it is the telephone game, run by a language model,
-against your own history.
+**Cumulative errors (#1) are *the* structural difference from RAG.** A retrieval error
+in RAG is confined to one query. In write-enabled memory, one wrong write contaminates
+every future read that touches it, and the corrupted memory can reinforce itself; one
+paper found persistent corrupted memories and earned the best title of the year,
+[Zombie Agents](https://arxiv.org/abs/2602.15654).
 
-**3. Memory poisoning is an open attack surface.** Content injected into memory persists
-and reactivates across sessions: [attacks are documented](https://arxiv.org/abs/2601.05504),
-[defenses are early](https://arxiv.org/abs/2605.23723), and no deployed system has a
-convincing answer. A memory without provenance is an unlocked door that stays unlocked.
+**Semantic drift (#2) is the telephone game, run by a language model, against your own
+history.** Raw text becomes a summary, the summary becomes a reflection, and every hop
+strips a little nuance until the stored fact no longer matches what happened. The fix
+implied is architectural: summaries must never be the only copy of the truth.
 
-**4. Naive forgetting destroys performance.** The cleanest evidence is A-MEM's own
-ablation: Ebbinghaus-style time decay controls store size and latency, and substantially
-degrades task success. Time-since-last-access is simply a bad proxy for value; the fact
-you need next week may not have been touched in months.
+**Naive forgetting (#4) has the cleanest damning evidence.** A-MEM's own ablation shows
+Ebbinghaus-style time decay controls store size and latency, and substantially degrades
+task success. Time-since-last-access is a bad proxy for value: the fact you need next
+week may not have been touched in months.
 
-**5. Over-compression loses decision-critical detail.** LightMem measured the curve:
-accuracy falls as compression rises. The objective should be task-aware (preserve causal
-facts, constraints, failures, procedures), not "make it shorter".
-
-**6. LLM-based maintenance is expensive and fragile.** Per-turn synchronous updates
-multiply calls and latency; asynchronous consolidation is cheaper but adapts slower; and
-either way a wrong merge fails silently.
-
-**7. Similarity is not utility** (see above), and it gets *worse* as the store grows,
-which is the opposite of what a memory should do.
-
-**8. Costs escalate with lifetime.** Without deduplication, selective retention and
-pruning, storage and indexing overhead grows until it eats the efficiency gains that
-justified the memory in the first place.
-
-**9. Temporal reasoning and knowledge updates are the weakest abilities**, per
-LongMemEval, and most stores have no first-class representation of time: no validity
-intervals, no superseding relations, no event order. Zep and MAGMA are structural
-exceptions; demonstrated results are still thin.
-
-**10. Latent and parametric memory trade away auditability**, and may simply relocate
-drift into catastrophic forgetting inside the weights. Open question; nobody has solid
-numbers for this family yet.
-
-**11. Multi-agent shared memory lacks provenance and access control.** Concurrent
-writes, stale shared state, and no story for who is allowed to believe what.
-
-**12. Evaluation itself is broken**, per the previous section, which means a system can
-be state-of-the-art on paper and worse than a naive baseline in your product. You
-cannot currently know without measuring it yourself.
+**Similarity-is-not-utility (#7) gets *worse* as the store grows**, which is exactly the
+opposite of what a memory should do. More memories means more near-duplicates that look
+like the query without helping the task, which is why the RL-retrieval line of work
+matters more than it seems.
 
 ## Directions with actual evidence behind them
 

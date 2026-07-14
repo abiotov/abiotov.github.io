@@ -17,27 +17,27 @@ const rowY = (i) => 56 + i * 44;
 ---
 <figure class="fig">
   <svg viewBox="0 0 720 290" role="img" aria-label="Bar chart: the same system (Zep) has four published LoCoMo scores depending on who ran the evaluation: 84 originally claimed then retracted, 75.14 corrected self-report, 65.99 in Mem0's paper, and 58.44 in Mem0's ten-seed re-run. The spread is 25.6 points.">
-    <text x="16" y="26" font-size="13.5" font-weight="600" fill="var(--ink)">One system, four published scores</text>
-    <text x="16" y="44" font-size="12" fill="var(--muted)">Zep on LoCoMo (LLM-judge accuracy, %), by who ran the harness</text>
+    <text x="16" y="26" font-size="16" font-weight="600" fill="var(--ink)">One system, four published scores</text>
+    <text x="16" y="45" font-size="13" fill="var(--muted)">Zep on LoCoMo (LLM-judge accuracy, %), by who ran the harness</text>
 
     <!-- gridlines -->
     {[0, 25, 50, 75, 100].map((t) => (
       <>
         <line x1={scale(t)} y1="52" x2={scale(t)} y2="238" stroke="var(--line)" stroke-width="1"></line>
-        <text x={scale(t)} y="256" text-anchor="middle" font-size="11" fill="var(--faint)">{t}</text>
+        <text x={scale(t)} y="256" text-anchor="middle" font-size="12" fill="var(--faint)">{t}</text>
       </>
     ))}
 
     {rows.map((r, i) => (
       <>
-        <text x="222" y={rowY(i) + 15} text-anchor="end" font-size="12" fill="var(--ink)">{r.label}</text>
+        <text x="222" y={rowY(i) + 15} text-anchor="end" font-size="13.5" fill="var(--ink)">{r.label}</text>
         {r.retracted ? (
           <rect x={x0} y={rowY(i)} width={scale(r.value) - x0} height="22" rx="4"
                 fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"></rect>
         ) : (
           <rect x={x0} y={rowY(i)} width={scale(r.value) - x0} height="22" rx="4" fill="var(--ink)"></rect>
         )}
-        <text x={scale(r.value) + 8} y={rowY(i) + 15} font-size="12" font-weight="600" fill="var(--ink)">{r.value.toFixed(2).replace('.00', '')}</text>
+        <text x={scale(r.value) + 8} y={rowY(i) + 15} font-size="14" font-weight="700" fill="var(--ink)">{r.value.toFixed(2).replace('.00', '')}</text>
       </>
     ))}
 
@@ -45,7 +45,7 @@ const rowY = (i) => 56 + i * 44;
     <line x1={scale(58.44)} y1="272" x2={scale(84)} y2="272" stroke="var(--muted)" stroke-width="1.5"></line>
     <line x1={scale(58.44)} y1="266" x2={scale(58.44)} y2="278" stroke="var(--muted)" stroke-width="1.5"></line>
     <line x1={scale(84)} y1="266" x2={scale(84)} y2="278" stroke="var(--muted)" stroke-width="1.5"></line>
-    <text x={(scale(58.44) + scale(84)) / 2} y="286" text-anchor="middle" font-size="11.5" fill="var(--muted)">25.6-point spread</text>
+    <text x={(scale(58.44) + scale(84)) / 2} y="287" text-anchor="middle" font-size="13.5" font-weight="600" fill="var(--muted)">25.6-point spread</text>
   </svg>
   <figcaption><strong>Fig. {num}.</strong> The same system, four published LoCoMo scores, depending entirely on who ran the evaluation. Sources: <a href="https://arxiv.org/abs/2504.19413">Mem0's paper</a>, <a href="https://blog.getzep.com/lies-damn-lies-statistics-is-mem0-really-sota-in-agent-memory/">Zep's corrected self-report</a>, <a href="https://github.com/getzep/zep-papers/issues/5">Mem0's 10-seed re-run</a>.</figcaption>
 </figure>
