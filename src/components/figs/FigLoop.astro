@@ -1,67 +1,106 @@
 ---
-// Fig 1 — the agent loop, draw.io visual style (official palette pairs),
-// hand-authored SVG so outside labels stay theme-aware. Editable source:
-// diagrams/fig1-agent-loop.drawio.
+// Fig 1 — where memory sits in an agent system. True system-design diagram:
+// user + device, agent runtime with context-window anatomy, LLM, tools,
+// out-of-context store. Monochrome, theme-aware, mono labels.
 const { num = '1' } = Astro.props;
-const ink = '#2d2d2d'; // text inside pastel boxes: fixed for both themes
+const mono = "'JetBrains Mono', monospace";
 ---
 <figure class="fig">
-  <svg viewBox="0 0 720 250" role="img" aria-label="Diagram of the agent loop: a task feeds a repeated cycle of memory, plan, act, observe; every observation becomes the next turn's input tokens, and memory is the only stage that can shrink what the others pay for.">
+  <svg viewBox="0 0 720 430" role="img" aria-label="System diagram: a user talks to an agent runtime whose context window contains system prompt, tool definitions, retrieved memories, message history and the user message. The context feeds an LLM which calls tools and returns an answer. An out-of-context memory store exchanges recall and write flows with the context window, and observations from tools append to the history.">
     <defs>
-      <marker id="arrL" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <marker id="sd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
         <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--muted)"></path>
       </marker>
     </defs>
 
-    <!-- task -->
-    <rect x="10" y="100" width="76" height="46" rx="8" fill="#f5f5f5" stroke="#666666" stroke-width="1.6"></rect>
-    <text x="48" y="128" text-anchor="middle" font-size="13.5" fill={ink} font-weight="600">task</text>
-    <line x1="86" y1="123" x2="122" y2="123" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrL)"></line>
+    <!-- ===== user + device ===== -->
+    <circle cx="46" cy="150" r="12" fill="none" stroke="var(--ink)" stroke-width="1.6"></circle>
+    <path d="M 24 190 C 24 170, 68 170, 68 190" fill="none" stroke="var(--ink)" stroke-width="1.6"></path>
+    <rect x="30" y="200" width="32" height="52" rx="5" fill="none" stroke="var(--ink)" stroke-width="1.6"></rect>
+    <line x1="41" y1="244" x2="51" y2="244" stroke="var(--ink)" stroke-width="1.6"></line>
+    <text x="46" y="278" text-anchor="middle" font-size="12" font-family={mono} fill="var(--ink)">user</text>
 
-    <!-- loop container, drawio dotted -->
-    <rect x="126" y="34" width="428" height="186" rx="10" fill="none" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="1.5 3"></rect>
-    <text x="340" y="26" text-anchor="middle" font-size="11" fill="var(--faint)" letter-spacing="1.5">REPEATED EVERY TURN</text>
+    <line x1="74" y1="176" x2="120" y2="176" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#sd1)"></line>
+    <text x="97" y="168" text-anchor="middle" font-size="10.5" font-family={mono} fill="var(--muted)">message</text>
 
-    <!-- memory (yellow pair) -->
-    <rect x="146" y="100" width="88" height="46" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.8"></rect>
-    <text x="190" y="128" text-anchor="middle" font-size="13.5" fill={ink} font-weight="700">memory</text>
-    <circle cx="190" cy="96" r="11" fill="#ffffff" stroke="#666666" stroke-width="1.3"></circle>
-    <text x="190" y="100" text-anchor="middle" font-size="11" fill={ink}>1</text>
+    <!-- ===== agent runtime ===== -->
+    <rect x="126" y="24" width="380" height="382" rx="10" fill="none" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="2 4"></rect>
+    <text x="494" y="46" text-anchor="end" font-size="11" font-family={mono} letter-spacing="1" fill="var(--faint)">AGENT RUNTIME</text>
 
-    <!-- plan (blue pair) -->
-    <rect x="256" y="100" width="72" height="46" rx="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="1.8"></rect>
-    <text x="292" y="128" text-anchor="middle" font-size="13.5" fill={ink}>plan</text>
-    <circle cx="292" cy="96" r="11" fill="#ffffff" stroke="#666666" stroke-width="1.3"></circle>
-    <text x="292" y="100" text-anchor="middle" font-size="11" fill={ink}>2</text>
+    <!-- context window anatomy -->
+    <rect x="146" y="60" width="180" height="310" rx="8" fill="none" stroke="var(--ink)" stroke-width="1.6"></rect>
+    <text x="236" y="82" text-anchor="middle" font-size="12" font-family={mono} fill="var(--ink)">context window</text>
 
-    <!-- act (orange pair) -->
-    <rect x="350" y="100" width="72" height="46" rx="8" fill="#ffe6cc" stroke="#d79b00" stroke-width="1.8"></rect>
-    <text x="386" y="128" text-anchor="middle" font-size="13.5" fill={ink}>act</text>
-    <circle cx="386" cy="96" r="11" fill="#ffffff" stroke="#666666" stroke-width="1.3"></circle>
-    <text x="386" y="100" text-anchor="middle" font-size="11" fill={ink}>3</text>
+    <rect x="158" y="94" width="156" height="38" rx="4" fill="var(--line)"></rect>
+    <text x="236" y="117" text-anchor="middle" font-size="11" font-family={mono} fill="var(--ink)">system prompt</text>
 
-    <!-- observe (green pair) -->
-    <rect x="444" y="100" width="88" height="46" rx="8" fill="#d5e8d4" stroke="#82b366" stroke-width="1.8"></rect>
-    <text x="488" y="128" text-anchor="middle" font-size="13.5" fill={ink}>observe</text>
-    <circle cx="488" cy="96" r="11" fill="#ffffff" stroke="#666666" stroke-width="1.3"></circle>
-    <text x="488" y="100" text-anchor="middle" font-size="11" fill={ink}>4</text>
+    <rect x="158" y="140" width="156" height="38" rx="4" fill="var(--line)"></rect>
+    <text x="236" y="163" text-anchor="middle" font-size="11" font-family={mono} fill="var(--ink)">tool definitions</text>
 
-    <line x1="234" y1="123" x2="252" y2="123" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrL)"></line>
-    <line x1="328" y1="123" x2="346" y2="123" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrL)"></line>
-    <line x1="422" y1="123" x2="440" y2="123" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrL)"></line>
+    <rect x="158" y="186" width="156" height="50" rx="4" fill="var(--ink)"></rect>
+    <text x="236" y="207" text-anchor="middle" font-size="11" font-family={mono} fill="var(--bg)" font-weight="700">retrieved memories</text>
+    <text x="236" y="224" text-anchor="middle" font-size="9.5" font-family={mono} fill="var(--bg)">the slot memory controls</text>
 
-    <!-- feedback curve -->
-    <path d="M 488 146 C 488 186, 190 186, 190 150" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrL)"></path>
-    <text x="340" y="200" text-anchor="middle" font-size="12" fill="var(--muted)">every observation becomes next turn's input tokens</text>
+    <rect x="158" y="244" width="156" height="72" rx="4" fill="var(--line)"></rect>
+    <text x="236" y="270" text-anchor="middle" font-size="11" font-family={mono} fill="var(--ink)">message history</text>
+    <text x="236" y="287" text-anchor="middle" font-size="9.5" font-family={mono} fill="var(--muted)">grows every turn</text>
+    <text x="236" y="301" text-anchor="middle" font-size="9.5" font-family={mono} fill="var(--muted)">n -&gt; n+1 -&gt; n+2 ...</text>
 
-    <!-- output -->
-    <line x1="554" y1="123" x2="590" y2="123" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrL)"></line>
-    <rect x="594" y="100" width="112" height="46" rx="8" fill="#f5f5f5" stroke="#666666" stroke-width="1.6"></rect>
-    <text x="650" y="128" text-anchor="middle" font-size="13.5" fill={ink} font-weight="600">answer</text>
+    <rect x="158" y="324" width="156" height="34" rx="4" fill="var(--line)"></rect>
+    <text x="236" y="345" text-anchor="middle" font-size="11" font-family={mono} fill="var(--ink)">user message</text>
 
-    <!-- annotation on memory -->
-    <path d="M 190 74 C 190 56, 226 50, 246 50" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"></path>
-    <text x="254" y="54" font-size="12" fill="var(--muted)">the only stage that can shrink what all the others pay for</text>
+    <!-- LLM chip -->
+    <rect x="392" y="150" width="86" height="66" rx="8" fill="none" stroke="var(--ink)" stroke-width="1.8"></rect>
+    <text x="435" y="188" text-anchor="middle" font-size="14" font-family={mono} font-weight="700" fill="var(--ink)">LLM</text>
+    <line x1="404" y1="142" x2="404" y2="150" stroke="var(--ink)" stroke-width="1.4"></line>
+    <line x1="424" y1="142" x2="424" y2="150" stroke="var(--ink)" stroke-width="1.4"></line>
+    <line x1="444" y1="142" x2="444" y2="150" stroke="var(--ink)" stroke-width="1.4"></line>
+    <line x1="464" y1="142" x2="464" y2="150" stroke="var(--ink)" stroke-width="1.4"></line>
+    <line x1="404" y1="216" x2="404" y2="224" stroke="var(--ink)" stroke-width="1.4"></line>
+    <line x1="424" y1="216" x2="424" y2="224" stroke="var(--ink)" stroke-width="1.4"></line>
+    <line x1="444" y1="216" x2="444" y2="224" stroke="var(--ink)" stroke-width="1.4"></line>
+    <line x1="464" y1="216" x2="464" y2="224" stroke="var(--ink)" stroke-width="1.4"></line>
+
+    <line x1="326" y1="183" x2="388" y2="183" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#sd1)"></line>
+    <text x="357" y="175" text-anchor="middle" font-size="10.5" font-family={mono} fill="var(--muted)">prefill</text>
+
+    <!-- LLM -> history (loop) -->
+    <path d="M 412 224 C 412 256, 352 260, 320 258" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#sd1)"></path>
+    <text x="398" y="244" font-size="10.5" font-family={mono} fill="var(--muted)">append</text>
+
+    <!-- answer back to user -->
+    <path d="M 392 122 C 300 42, 120 60, 62 138" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#sd1)"></path>
+    <text x="150" y="58" font-size="10.5" font-family={mono} fill="var(--muted)">answer</text>
+    <line x1="435" y1="150" x2="435" y2="132" stroke="var(--muted)" stroke-width="1.5"></line>
+    <path d="M 435 132 C 420 124, 404 120, 392 122" fill="none" stroke="var(--muted)" stroke-width="1.5"></path>
+
+    <!-- ===== memory store ===== -->
+    <path d="M 552 82 a 62 14 0 0 1 124 0 v 96 a 62 14 0 0 1 -124 0 z" fill="var(--line)" stroke="var(--ink)" stroke-width="1.6"></path>
+    <ellipse cx="614" cy="82" rx="62" ry="14" fill="var(--line)" stroke="var(--ink)" stroke-width="1.6"></ellipse>
+    <text x="614" y="130" text-anchor="middle" font-size="11.5" font-family={mono} font-weight="700" fill="var(--ink)">out-of-context</text>
+    <text x="614" y="147" text-anchor="middle" font-size="11.5" font-family={mono} font-weight="700" fill="var(--ink)">memory store</text>
+    <text x="614" y="168" text-anchor="middle" font-size="9.5" font-family={mono} fill="var(--muted)">items · graph · ledger</text>
+
+    <!-- recall / write flows -->
+    <path d="M 552 122 C 470 92, 366 126, 322 198" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#sd1)"></path>
+    <text x="446" y="100" text-anchor="middle" font-size="10.5" font-family={mono} fill="var(--muted)">recall</text>
+    <path d="M 318 300 C 420 336, 530 260, 564 200" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#sd1)"></path>
+    <text x="452" y="326" text-anchor="middle" font-size="10.5" font-family={mono} fill="var(--muted)">write · consolidate</text>
+
+    <!-- ===== tools ===== -->
+    <rect x="552" y="300" width="124" height="70" rx="8" fill="none" stroke="var(--ink)" stroke-width="1.6"></rect>
+    <circle cx="580" cy="326" r="9" fill="none" stroke="var(--ink)" stroke-width="1.5"></circle>
+    <line x1="580" y1="313" x2="580" y2="317" stroke="var(--ink)" stroke-width="1.5"></line>
+    <line x1="580" y1="335" x2="580" y2="339" stroke="var(--ink)" stroke-width="1.5"></line>
+    <line x1="567" y1="326" x2="571" y2="326" stroke="var(--ink)" stroke-width="1.5"></line>
+    <line x1="589" y1="326" x2="593" y2="326" stroke="var(--ink)" stroke-width="1.5"></line>
+    <text x="640" y="331" text-anchor="middle" font-size="12" font-family={mono} font-weight="700" fill="var(--ink)">tools</text>
+    <text x="614" y="355" text-anchor="middle" font-size="9.5" font-family={mono} fill="var(--muted)">search · code · APIs</text>
+
+    <path d="M 478 208 C 522 244, 552 272, 588 296" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#sd1)"></path>
+    <text x="540" y="252" text-anchor="middle" font-size="10.5" font-family={mono} fill="var(--muted)">call</text>
+    <path d="M 552 348 C 430 388, 334 346, 318 310" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#sd1)"></path>
+    <text x="446" y="382" text-anchor="middle" font-size="10.5" font-family={mono} fill="var(--muted)">observation</text>
   </svg>
-  <figcaption><strong>Fig. {num}.</strong> The agent loop. Output of turn <em>n</em> becomes input cost of turn <em>n+1</em>; retries, redundant tool calls and long contexts all compound. Memory is the one component positioned to cut every term at once.</figcaption>
+  <figcaption><strong>Fig. {num}.</strong> Where memory actually sits in an agent system. Everything inside the context window is paid for on every LLM call; the history slot grows every turn, and the highlighted slot is the one memory controls. The recall and write flows to the out-of-context store decide whether that slot saves tokens or wastes them.</figcaption>
 </figure>
