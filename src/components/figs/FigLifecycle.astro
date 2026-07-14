@@ -1,0 +1,74 @@
+---
+// Fig 2 — the memory lifecycle taxonomy (construction / management / access).
+const { num = '2' } = Astro.props;
+---
+<figure class="fig">
+  <svg viewBox="0 0 720 330" role="img" aria-label="Taxonomy of agent memory as a lifecycle with three stages: construction (textual, latent, parametric), management (rule-based, LLM-based, hybrid) and access (selection and integration), with example systems under each.">
+    <defs>
+      <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--muted)"></path>
+      </marker>
+    </defs>
+
+    <!-- three stage headers -->
+    <rect x="16" y="16" width="212" height="40" rx="8" fill="var(--ink)"></rect>
+    <text x="122" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="var(--bg)">1 · Construction</text>
+
+    <rect x="254" y="16" width="212" height="40" rx="8" fill="var(--ink)"></rect>
+    <text x="360" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="var(--bg)">2 · Management</text>
+
+    <rect x="492" y="16" width="212" height="40" rx="8" fill="var(--ink)"></rect>
+    <text x="598" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="var(--bg)">3 · Access</text>
+
+    <line x1="228" y1="36" x2="250" y2="36" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arr2)"></line>
+    <line x1="466" y1="36" x2="488" y2="36" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arr2)"></line>
+
+    <!-- construction column -->
+    <rect x="16" y="72" width="212" height="128" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
+    <text x="28" y="94" font-size="12.5" font-weight="600" fill="var(--ink)">textual</text>
+    <text x="28" y="112" font-size="11.5" fill="var(--muted)">prompt-resident · items · graphs ·</text>
+    <text x="28" y="127" font-size="11.5" fill="var(--muted)">hierarchies (Mem0, A-MEM, Zep,</text>
+    <text x="28" y="142" font-size="11.5" fill="var(--muted)">MemGPT, MemoryOS)</text>
+    <text x="28" y="164" font-size="12.5" font-weight="600" fill="var(--ink)">latent</text>
+    <text x="83" y="164" font-size="11.5" fill="var(--muted)">KV states (MemoRAG)</text>
+    <text x="28" y="186" font-size="12.5" font-weight="600" fill="var(--ink)">parametric</text>
+    <text x="112" y="186" font-size="11.5" fill="var(--muted)">weights (Titans)</text>
+
+    <rect x="16" y="212" width="212" height="52" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
+    <text x="28" y="232" font-size="12" font-weight="600" fill="var(--ink)">design question</text>
+    <text x="28" y="250" font-size="11.5" fill="var(--muted)">how lossy can the write be?</text>
+
+    <!-- management column -->
+    <rect x="254" y="72" width="212" height="128" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
+    <text x="266" y="94" font-size="12.5" font-weight="600" fill="var(--ink)">rule-based</text>
+    <text x="266" y="112" font-size="11.5" fill="var(--muted)">decay, FIFO: cheap, blind</text>
+    <text x="266" y="134" font-size="12.5" font-weight="600" fill="var(--ink)">LLM-based</text>
+    <text x="266" y="152" font-size="11.5" fill="var(--muted)">semantic, costly, can corrupt</text>
+    <text x="266" y="174" font-size="12.5" font-weight="600" fill="var(--ink)">hybrid</text>
+    <text x="266" y="192" font-size="11.5" fill="var(--muted)">triggers + LLM consolidation</text>
+
+    <rect x="254" y="212" width="212" height="52" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
+    <text x="266" y="232" font-size="12" font-weight="600" fill="var(--ink)">design question</text>
+    <text x="266" y="250" font-size="11.5" fill="var(--muted)">which update is worth its cost?</text>
+
+    <!-- access column -->
+    <rect x="492" y="72" width="212" height="128" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
+    <text x="504" y="94" font-size="12.5" font-weight="600" fill="var(--ink)">selection</text>
+    <text x="504" y="112" font-size="11.5" fill="var(--muted)">similarity + recency + importance,</text>
+    <text x="504" y="127" font-size="11.5" fill="var(--muted)">graph traversal, learned utility</text>
+    <text x="504" y="142" font-size="11.5" fill="var(--muted)">(RMM, Memento, MemRL)</text>
+    <text x="504" y="164" font-size="12.5" font-weight="600" fill="var(--ink)">integration</text>
+    <text x="504" y="182" font-size="11.5" fill="var(--muted)">compact blocks, playbooks,</text>
+    <text x="504" y="197" font-size="11.5" fill="var(--muted)">KV injection</text>
+
+    <rect x="492" y="212" width="212" height="52" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"></rect>
+    <text x="504" y="232" font-size="12" font-weight="600" fill="var(--ink)">design question</text>
+    <text x="504" y="250" font-size="11.5" fill="var(--muted)">is similarity actually utility?</text>
+
+    <!-- bottom note -->
+    <text x="360" y="300" text-anchor="middle" font-size="12" fill="var(--muted)">optimizing one stage in isolation moves the cost to another stage</text>
+    <path d="M 122 264 C 122 288, 240 296, 300 298" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"></path>
+    <path d="M 598 264 C 598 288, 480 296, 420 298" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3"></path>
+  </svg>
+  <figcaption><strong>Fig. {num}.</strong> Agent memory as a lifecycle, following the framing of <a href="https://arxiv.org/abs/2601.14192">Toward Efficient Agents</a>. Skills (procedural memory) and multi-agent stores run the same lifecycle one level up.</figcaption>
+</figure>

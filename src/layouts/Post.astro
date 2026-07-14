@@ -1,6 +1,7 @@
 ---
 import Base from './Base.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
+import 'katex/dist/katex.min.css';
 
 const { frontmatter, headings = [] } = Astro.props;
 const title = frontmatter?.title ?? 'Writing';
