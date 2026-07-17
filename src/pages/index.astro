@@ -36,7 +36,20 @@ const fmtDate = (d) => {
       </div>
     </section>
 
-    <section>
+    <section id="projects">
+      <h2 class="section-label">Projects</h2>
+      <a class="post-row" href="https://github.com/abiotov/polyglot-booking-agent" target="_blank" rel="noopener">
+        <span class="row-top">
+          <span class="post-title">Polyglot Booking Agent</span>
+          <span class="post-date">Python</span>
+        </span>
+        <span class="post-excerpt">Multilingual voice agent for appointment booking: deterministic scheduling engine, CalDAV as the single source of truth, FR/EN mid-call language switching, scenario-based evals.</span>
+      </a>
+      <p class="building">More experiments and open source on <a href="https://github.com/abiotov" target="_blank" rel="noopener">GitHub</a>.</p>
+    </section>
+
+    <section id="writing">
+      <h2 class="section-label">Writing</h2>
       {posts.map((p) => (
         <a class="post-row" href={p.href}>
           <span class="row-top">
