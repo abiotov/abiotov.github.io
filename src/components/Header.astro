@@ -10,6 +10,7 @@ const { active = '' } = Astro.props;
       <a href="/" class={active === 'home' ? 'nav-active' : undefined}>home</a>
       <a href="/#projects">projects</a>
       <a href="/writing/" class={active === 'writing' ? 'nav-active' : undefined}>writing</a>
+      <a href="/about/" class={active === 'about' ? 'nav-active' : undefined}>about</a>
       <span class="nav-sep" aria-hidden="true"></span>
       <SocialIcons />
       <ThemeToggle />

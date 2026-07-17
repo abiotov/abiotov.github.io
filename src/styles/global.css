@@ -28,15 +28,45 @@ img { max-width: 100%; display: block; }
 h1, h2, h3 { font-family: var(--sans); font-weight: 600; letter-spacing: -.02em; line-height: 1.2; margin: 0; }
 strong { font-weight: 600; }
 
-/* ---------- header ---------- */
-.site-header {
-  position: sticky; top: 0; z-index: 20;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid transparent; transition: border-color .25s ease;
+/* ---------- ambient background (gives the glass something to refract) ---------- */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(640px 420px at 82% -8%, color-mix(in srgb, var(--ink) 6%, transparent), transparent 70%),
+    radial-gradient(540px 400px at -12% 28%, color-mix(in srgb, var(--ink) 4%, transparent), transparent 70%),
+    radial-gradient(520px 420px at 108% 78%, color-mix(in srgb, var(--ink) 4%, transparent), transparent 72%);
 }
-.site-header.scrolled { border-bottom-color: var(--line); }
-.nav { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+
+/* ---------- header: floating liquid-glass capsule ---------- */
+.site-header {
+  position: sticky; top: 10px; z-index: 20;
+  background: none; transition: none;
+}
+.nav {
+  display: flex; align-items: center; justify-content: space-between; height: 54px;
+  padding: 0 18px; border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent),
+    0 6px 24px color-mix(in srgb, var(--ink) 6%, transparent);
+  transition: box-shadow .25s ease, background .25s ease;
+}
+:root[data-theme="dark"] .nav {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 9%, transparent),
+    0 6px 24px rgba(0, 0, 0, .35);
+}
+.site-header.scrolled .nav {
+  background: color-mix(in srgb, var(--bg) 74%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent),
+    0 10px 32px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .nav { background: var(--bg); }
+}
 .brand { font-weight: 600; letter-spacing: -.01em; }
 .nav-links { display: flex; align-items: center; gap: 20px; }
 .nav-links a { font-size: .92rem; color: var(--muted); transition: color .2s; }
@@ -49,13 +79,29 @@ strong { font-weight: 600; }
 .icon-link:hover { color: var(--ink); }
 .icon-link svg { display: block; }
 
-/* ---------- project cards ---------- */
+/* ---------- project cards (subtle glass) ---------- */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 10px; }
 .card {
-  border: 1px solid var(--line); border-radius: 10px; padding: 18px 18px 16px;
-  display: flex; flex-direction: column; gap: 8px; transition: border-color .2s;
+  border: 1px solid color-mix(in srgb, var(--ink) 9%, transparent); border-radius: 14px; padding: 16px 18px 16px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent);
+  display: flex; flex-direction: column; gap: 8px;
+  transition: border-color .2s, box-shadow .25s ease, transform .25s ease;
 }
-.card:hover { border-color: var(--muted); }
+:root[data-theme="dark"] .card { box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 7%, transparent); }
+.card:hover {
+  border-color: color-mix(in srgb, var(--ink) 22%, transparent);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
+    0 12px 28px color-mix(in srgb, var(--ink) 9%, transparent);
+}
+.card-cover {
+  margin: 0 0 6px; border-radius: 9px; background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.card-cover svg { width: 100%; height: auto; display: block; }
 .card-title { font-size: 1.02rem; font-weight: 600; }
 .card-tag { margin-top: -6px; }
 .card-title:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -70,7 +116,16 @@ strong { font-weight: 600; }
 .building { margin-top: 14px; }
 
 /* ---------- footer icons ---------- */
-.footer-icons { display: flex; gap: 16px; margin-bottom: 12px; }
+.footer-icons { display: flex; gap: 16px; margin-bottom: 12px; align-items: center; }
+.footer-rss { font-size: .8rem; color: var(--muted); letter-spacing: .06em; }
+.footer-rss:hover { color: var(--ink); }
+
+/* ---------- about page ---------- */
+.about-body { margin-top: 8px; }
+.about-body p { margin: 0 0 8px; color: var(--ink); max-width: 62ch; }
+.about-body a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.about-body a:hover { text-decoration-color: var(--muted); }
+.about-body .bio-icons { margin-top: 6px; }
 
 /* ---------- bio ---------- */
 .bio { padding: 56px 0 36px; }

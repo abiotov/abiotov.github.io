@@ -2,21 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-
-const posts = [
-  {
-    title: 'A real calendar server in your test suite',
-    date: '2026-07-17',
-    href: '/writing/radicale-pytest/',
-    excerpt: 'Run Radicale in-process as a pytest fixture: real CalDAV integration tests, no Docker.',
-  },
-  {
-    title: 'Agent memory: what exists, what breaks, and what nobody measures',
-    date: '2026-07-14',
-    href: '/writing/agent-memory/',
-    excerpt: 'A field guide to memory for LLM agents, with the benchmark numbers fact-checked.',
-  },
-];
+import { posts } from '../../data/site.js';
 
 const fmtDate = (d) => {
   const [y, m, day] = d.split('-');

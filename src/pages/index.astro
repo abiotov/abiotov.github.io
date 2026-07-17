@@ -3,33 +3,8 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SocialIcons from '../components/SocialIcons.astro';
-
-const posts = [
-  { title: 'A real calendar server in your test suite', date: '2026-07-17', href: '/writing/radicale-pytest/' },
-  { title: 'Agent memory: what exists, what breaks, and what nobody measures', date: '2026-07-14', href: '/writing/agent-memory/' },
-];
-
-const projects = [
-  {
-    title: 'Polyglot Booking Agent',
-    tag: 'Python · voice agents',
-    href: 'https://github.com/abiotov/polyglot-booking-agent',
-    desc: 'Multilingual voice agent for appointment booking: deterministic scheduling engine, CalDAV as the single source of truth, FR/EN mid-call language switching, scenario-based evals.',
-    links: [
-      { label: 'GitHub', href: 'https://github.com/abiotov/polyglot-booking-agent' },
-      { label: 'Related post', href: '/writing/radicale-pytest/' },
-    ],
-  },
-  {
-    title: 'Annuaire Bénin',
-    tag: 'Python · data engineering',
-    href: 'https://github.com/abiotov/annuaire-benin',
-    desc: "Cleaning and deduplicating Benin's national business directory: ~500k raw rows into a validated, measured database (E.164 validation, record linkage, classification, economic atlas).",
-    links: [
-      { label: 'GitHub', href: 'https://github.com/abiotov/annuaire-benin' },
-    ],
-  },
-];
+import ProjectCover from '../components/ProjectCover.astro';
+import { posts, projects } from '../data/site.js';
 
 const fmtDate = (d) => {
   const [y, m, day] = d.split('-');
@@ -56,6 +31,7 @@ const fmtDate = (d) => {
       <div class="cards">
         {projects.map((p) => (
           <article class="card">
+            <ProjectCover kind={p.cover} />
             <a class="card-title" href={p.href} target="_blank" rel="noopener">{p.title}</a>
             <span class="card-tag">{p.tag}</span>
             <p class="card-desc">{p.desc}</p>

@@ -1,0 +1,42 @@
+---
+// Abstract monochrome SVG covers for project cards. Inline, theme-aware, no assets.
+const { kind } = Astro.props;
+---
+{kind === 'polyglot' && (
+  <div class="card-cover" aria-hidden="true">
+    <svg viewBox="0 0 320 96" preserveAspectRatio="xMidYMid meet">
+      {/* voice waveform */}
+      {[18, 34, 50, 66, 82, 98, 114, 130].map((x, i) => {
+        const hs = [16, 34, 52, 40, 60, 30, 44, 20];
+        return <rect x={x} y={48 - hs[i] / 2} width="7" height={hs[i]} rx="3.5" fill="var(--muted)" opacity={i % 2 ? 0.55 : 0.9} />;
+      })}
+      {/* flow arrow */}
+      <path d="M150 48 h28" stroke="var(--faint)" stroke-width="2" stroke-dasharray="3 4" />
+      {/* calendar grid */}
+      <rect x="192" y="18" width="106" height="62" rx="8" fill="none" stroke="var(--muted)" stroke-width="2" />
+      <path d="M192 36 h106" stroke="var(--muted)" stroke-width="2" />
+      {[212, 232, 252, 272].map((x) => <circle cx={x} cy="50" r="3.5" fill="var(--faint)" />)}
+      {[212, 232].map((x) => <circle cx={x} cy="66" r="3.5" fill="var(--faint)" />)}
+      <circle cx="252" cy="66" r="6" fill="none" stroke="var(--ink)" stroke-width="2" />
+    </svg>
+  </div>
+)}
+{kind === 'annuaire' && (
+  <div class="card-cover" aria-hidden="true">
+    <svg viewBox="0 0 320 96" preserveAspectRatio="xMidYMid meet">
+      {/* messy rows in, linked clean records out */}
+      {[24, 40, 56, 72].map((y, i) => (
+        <rect x="24" y={y - 3} width={i % 2 ? 52 : 68} height="6" rx="3" fill="var(--faint)" opacity="0.7" />
+      ))}
+      <path d="M108 48 h28" stroke="var(--faint)" stroke-width="2" stroke-dasharray="3 4" />
+      {/* record-linkage graph */}
+      <g stroke="var(--muted)" stroke-width="1.8" fill="none">
+        <path d="M172 30 L206 48 L172 66 M206 48 L244 26 M206 48 L250 62 M244 26 L284 40 M250 62 L284 40" />
+      </g>
+      {[[172, 30], [172, 66], [206, 48], [244, 26], [250, 62]].map(([cx, cy]) => (
+        <circle cx={cx} cy={cy} r="5" fill="var(--bg)" stroke="var(--muted)" stroke-width="2" />
+      ))}
+      <circle cx="284" cy="40" r="7" fill="none" stroke="var(--ink)" stroke-width="2.2" />
+    </svg>
+  </div>
+)}

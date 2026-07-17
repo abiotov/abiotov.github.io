@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SocialIcons from '../components/SocialIcons.astro';
+---
+
+<Base title="About · Abiotov" description="Who is behind this site, what I work on, and how I think about building AI systems.">
+  <Header active="about" />
+
+  <main class="wrap">
+    <section class="bio">
+      <h1 class="hero-title">About</h1>
+      <p class="bio-intro">I'm Abiotov, an AI engineer focused on applied LLM systems: the unglamorous distance between a model that demos well and a system that behaves in production.</p>
+
+      <div class="about-body">
+        <h2 class="section-label">What I work on</h2>
+        <p>I build end-to-end AI systems: retrieval-augmented generation over messy real-world corpora, agentic workflows with strictly validated tool boundaries, real-time voice agents, and the evaluation harnesses that keep all of it honest. The recurring theme in my work is moving reliability out of prompts and into deterministic code: the LLM converses, the system decides.</p>
+
+        <h2 class="section-label">How I think about it</h2>
+        <p>Three convictions shape most of my technical choices. Bugs should be reproduced end-to-end before they are fixed, because unit tests mostly encode the assumptions that caused the bug. Anything that must be reliable belongs in the harness, not in the prompt. And an AI system without an evaluation loop is a demo, whatever its architecture diagram says.</p>
+
+        <h2 class="section-label">Currently</h2>
+        <p>Building <a href="https://github.com/abiotov/polyglot-booking-agent" target="_blank" rel="noopener">Polyglot Booking Agent</a>, a multilingual voice agent for appointment booking, and writing about what building it teaches me: the first post about its <a href="/writing/radicale-pytest/">CalDAV test setup</a> is up. Also exploring data engineering for underserved markets with <a href="https://github.com/abiotov/annuaire-benin" target="_blank" rel="noopener">Annuaire Bénin</a>.</p>
+
+        <h2 class="section-label">Toolbox</h2>
+        <p>Python and TypeScript. LiveKit, Deepgram and Cartesia for voice. CalDAV, Postgres and plain files for state. pytest and Hypothesis for confidence. Claude and GPT model families behind provider-agnostic adapters, because models change faster than systems.</p>
+
+        <h2 class="section-label">Elsewhere</h2>
+        <div class="bio-icons">
+          <SocialIcons size={20} />
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Base>
