@@ -189,7 +189,7 @@ def calendar(radicale_url: str, request: pytest.FixtureRequest) -> CalDAVCalenda
         username="agent",
         password="agent",
         calendar_name=f"appointments-{request.node.name}",
-        timezone="Africa/Porto-Novo",
+        timezone="Europe/Paris",
     )
 ```
 
@@ -200,9 +200,9 @@ client (Thunderbird, DAVx5) at the URL and inspect the exact calendar it left be
 
 ### Tests that exercise the real wire protocol
 
-These are real tests from the project, unedited. Note what they quietly cover: icalendar
-serialization both ways, timezone round trips through an aware server, and the server's
-actual view of what "free" means.
+These are real tests from the project, with only names and numbers swapped. Note what
+they quietly cover: icalendar serialization both ways, timezone round trips through an
+aware server, and the server's actual view of what "free" means.
 
 ```python
 from datetime import date, datetime
@@ -216,8 +216,8 @@ def test_booked_appointment_becomes_a_busy_interval(calendar) -> None:
     booking = calendar.book(
         start=datetime(2026, 7, 20, 8, 15),
         end=datetime(2026, 7, 20, 8, 30),
-        patient_name="Jean Kokou",
-        patient_phone="+22997000000",
+        patient_name="Jean Dupont",
+        patient_phone="+33655000000",
     )
     intervals = calendar.busy_intervals(MONDAY)
     assert len(intervals) == 1
@@ -230,14 +230,14 @@ def test_read_before_write_refuses_a_taken_slot(calendar) -> None:
         start=datetime(2026, 7, 20, 9, 0),
         end=datetime(2026, 7, 20, 9, 15),
         patient_name="First Caller",
-        patient_phone="+22990000001",
+        patient_phone="+33655000001",
     )
     with pytest.raises(SlotTakenError):
         calendar.book(
             start=datetime(2026, 7, 20, 9, 0),
             end=datetime(2026, 7, 20, 9, 15),
             patient_name="Second Caller",
-            patient_phone="+22990000002",
+            patient_phone="+33655000002",
         )
 ```
 
