@@ -1,10 +1,34 @@
 ---
 import Base from '../layouts/Base.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SocialIcons from '../components/SocialIcons.astro';
 
 const posts = [
   { title: 'A real calendar server in your test suite', date: '2026-07-17', href: '/writing/radicale-pytest/' },
   { title: 'Agent memory: what exists, what breaks, and what nobody measures', date: '2026-07-14', href: '/writing/agent-memory/' },
+];
+
+const projects = [
+  {
+    title: 'Polyglot Booking Agent',
+    tag: 'Python · voice agents',
+    href: 'https://github.com/abiotov/polyglot-booking-agent',
+    desc: 'Multilingual voice agent for appointment booking: deterministic scheduling engine, CalDAV as the single source of truth, FR/EN mid-call language switching, scenario-based evals.',
+    links: [
+      { label: 'GitHub', href: 'https://github.com/abiotov/polyglot-booking-agent' },
+      { label: 'Related post', href: '/writing/radicale-pytest/' },
+    ],
+  },
+  {
+    title: 'Annuaire Bénin',
+    tag: 'Python · data engineering',
+    href: 'https://github.com/abiotov/annuaire-benin',
+    desc: "Cleaning and deduplicating Benin's national business directory: ~500k raw rows into a validated, measured database (E.164 validation, record linkage, classification, economic atlas).",
+    links: [
+      { label: 'GitHub', href: 'https://github.com/abiotov/annuaire-benin' },
+    ],
+  },
 ];
 
 const fmtDate = (d) => {
@@ -16,35 +40,33 @@ const fmtDate = (d) => {
 ---
 
 <Base>
-  <header class="site-header">
-    <div class="wrap nav">
-      <a class="brand" href="/">Abiotov</a>
-      <nav class="nav-links">
-        <a href="https://github.com/abiotov" target="_blank" rel="noopener">github</a>
-        <ThemeToggle />
-      </nav>
-    </div>
-  </header>
+  <Header active="home" />
 
   <main class="wrap">
     <section class="bio">
-      <p class="bio-intro">Abiotov is an AI engineer working on applied LLM systems in production. He builds end-to-end systems across retrieval-augmented generation, agentic workflows, real-time voice, LLM evaluation, and resilient multi-provider infrastructure. His focus is taking AI from prototype to production behind real users: where grounding, reliability, and evaluation are what actually matter.</p>
-      <div class="bio-links">
-        <a href="https://github.com/abiotov" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://linkedin.com/in/etiennetovi" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="mailto:abiodouneti@gmail.com">Email</a>
+      <h1 class="hero-title">Hi, I'm Abiotov.</h1>
+      <p class="bio-intro">AI engineer working on applied LLM systems in production. I build end-to-end systems across retrieval-augmented generation, agentic workflows, real-time voice, LLM evaluation, and resilient multi-provider infrastructure. My focus is taking AI from prototype to production behind real users: where grounding, reliability, and evaluation are what actually matter.</p>
+      <div class="bio-icons">
+        <SocialIcons size={20} />
       </div>
     </section>
 
     <section id="projects">
       <h2 class="section-label">Projects</h2>
-      <a class="post-row" href="https://github.com/abiotov/polyglot-booking-agent" target="_blank" rel="noopener">
-        <span class="row-top">
-          <span class="post-title">Polyglot Booking Agent</span>
-          <span class="post-date">Python</span>
-        </span>
-        <span class="post-excerpt">Multilingual voice agent for appointment booking: deterministic scheduling engine, CalDAV as the single source of truth, FR/EN mid-call language switching, scenario-based evals.</span>
-      </a>
+      <div class="cards">
+        {projects.map((p) => (
+          <article class="card">
+            <a class="card-title" href={p.href} target="_blank" rel="noopener">{p.title}</a>
+            <span class="card-tag">{p.tag}</span>
+            <p class="card-desc">{p.desc}</p>
+            <div class="card-links">
+              {p.links.map((l) => (
+                <a href={l.href} target={l.href.startsWith('http') ? '_blank' : undefined} rel={l.href.startsWith('http') ? 'noopener' : undefined}>{l.label}</a>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
       <p class="building">More experiments and open source on <a href="https://github.com/abiotov" target="_blank" rel="noopener">GitHub</a>.</p>
     </section>
 
@@ -61,7 +83,5 @@ const fmtDate = (d) => {
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap"><p class="colophon">© 2026 Abiotov</p></div>
-  </footer>
+  <Footer />
 </Base>

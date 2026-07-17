@@ -1,6 +1,7 @@
 ---
 import Base from './Base.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 import 'katex/dist/katex.min.css';
 
 const { frontmatter, headings = [] } = Astro.props;
@@ -21,16 +22,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
 <Base title={`${title} · Abiotov`} description={frontmatter?.description}>
-  <header class="site-header">
-    <div class="wrap nav">
-      <a class="brand" href="/">Abiotov</a>
-      <nav class="nav-links">
-        <a href="/">home</a>
-        <a href="https://github.com/abiotov" target="_blank" rel="noopener">github</a>
-        <ThemeToggle />
-      </nav>
-    </div>
-  </header>
+  <Header active="writing" />
 
   <div class="post-wrap">
     <article class="post">
@@ -66,9 +58,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
     )}
   </div>
 
-  <footer class="site-footer">
-    <div class="wrap"><p class="colophon">© 2026 Abiotov</p></div>
-  </footer>
+  <Footer />
 
   <button id="to-top" class="to-top" aria-label="Back to top" title="Back to top">&uarr;</button>
 

@@ -1,0 +1,18 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import SocialIcons from './SocialIcons.astro';
+const { active = '' } = Astro.props;
+---
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="/">Abiotov</a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="/" class={active === 'home' ? 'nav-active' : undefined}>home</a>
+      <a href="/#projects">projects</a>
+      <a href="/writing/" class={active === 'writing' ? 'nav-active' : undefined}>writing</a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <SocialIcons />
+      <ThemeToggle />
+    </nav>
+  </div>
+</header>
