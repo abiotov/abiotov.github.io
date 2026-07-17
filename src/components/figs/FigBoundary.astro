@@ -1,0 +1,46 @@
+---
+// Fig 1 — ONE idea: unit-test the pure core with no I/O; integration-test the
+// adapter against a real server; nothing in between is mocked.
+const { num = '1' } = Astro.props;
+---
+<figure class="fig">
+  <svg viewBox="0 0 720 280" role="img" aria-label="Two test zones. Left: the scheduling engine, a pure function, covered by unit and property tests with no I/O. Right: the calendar adapter talking to a real in-process Radicale server backed by a temp folder. A vertical boundary separates them; no mocks exist on either side.">
+    <defs>
+      <marker id="fb1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--muted)"></path>
+      </marker>
+    </defs>
+
+    <!-- zone labels -->
+    <text x="170" y="34" text-anchor="middle" font-size="15" fill="var(--faint)">unit + property tests · milliseconds</text>
+    <text x="540" y="34" text-anchor="middle" font-size="15" fill="var(--faint)">integration tests · seconds</text>
+
+    <!-- engine box -->
+    <rect x="60" y="72" width="220" height="96" rx="10" fill="none" stroke="var(--ink)" stroke-width="2"></rect>
+    <text x="170" y="112" text-anchor="middle" font-size="19" font-weight="600" fill="var(--ink)">scheduling engine</text>
+    <text x="170" y="138" text-anchor="middle" font-size="13" fill="var(--muted)">pure function · no I/O</text>
+
+    <!-- boundary -->
+    <line x1="360" y1="56" x2="360" y2="224" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 6"></line>
+    <text x="360" y="252" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">the boundary: mock nothing on either side</text>
+
+    <!-- adapter box -->
+    <rect x="400" y="72" width="150" height="96" rx="10" fill="none" stroke="var(--ink)" stroke-width="2"></rect>
+    <text x="475" y="112" text-anchor="middle" font-size="19" font-weight="600" fill="var(--ink)">adapter</text>
+    <text x="475" y="138" text-anchor="middle" font-size="13" fill="var(--muted)">timezones · writes</text>
+
+    <!-- arrows across and to server -->
+    <line x1="280" y1="120" x2="396" y2="120" stroke="var(--muted)" stroke-width="2" marker-end="url(#fb1)" marker-start="url(#fb1)"></line>
+    <text x="338" y="104" text-anchor="middle" font-size="13" fill="var(--muted)" paint-order="stroke" stroke="var(--bg)" stroke-width="6" stroke-linejoin="round">busy intervals</text>
+
+    <line x1="550" y1="120" x2="588" y2="120" stroke="var(--muted)" stroke-width="2" marker-end="url(#fb1)" marker-start="url(#fb1)"></line>
+
+    <!-- radicale cylinder -->
+    <path d="M 592 88 a 46 12 0 0 1 92 0 v 66 a 46 12 0 0 1 -92 0 z" fill="var(--line)" stroke="var(--ink)" stroke-width="2"></path>
+    <ellipse cx="638" cy="88" rx="46" ry="12" fill="var(--line)" stroke="var(--ink)" stroke-width="2"></ellipse>
+    <text x="638" y="126" text-anchor="middle" font-size="17" font-weight="600" fill="var(--ink)">Radicale</text>
+    <text x="638" y="146" text-anchor="middle" font-size="12" fill="var(--muted)">real CalDAV</text>
+    <text x="638" y="196" text-anchor="middle" font-size="13" fill="var(--muted)">temp folder</text>
+  </svg>
+  <figcaption><strong>Fig. {num}.</strong> Where the real server lives. The scheduling engine is a pure function and never sees a socket; the adapter owns all I/O and is tested against a real in-process Radicale. There is no mock at the boundary, so there is no mock to be wrong.</figcaption>
+</figure>

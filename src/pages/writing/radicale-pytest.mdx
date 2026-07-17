@@ -1,0 +1,347 @@
+---
+layout: ../../layouts/Post.astro
+title: "A real calendar server in your test suite"
+description: "How to run Radicale in-process as a pytest fixture, so your CalDAV integration tests hit a real server instead of a mock. No Docker required."
+date: 2026-07-17
+readingTime: 9 min read
+---
+
+import Callout from '../../components/Callout.astro';
+import FigBoundary from '../../components/figs/FigBoundary.astro';
+
+I am building a [voice booking agent](https://github.com/abiotov/polyglot-booking-agent)
+whose single source of truth is a CalDAV calendar. Not a bookings table that syncs with a
+calendar: the calendar itself. Which means the scariest code in the project is not the LLM
+part. It is the adapter that reads busy intervals and writes appointments into a
+practitioner's real calendar.
+
+My first instinct was the standard one: mock the CalDAV client. I wrote three of those
+tests and deleted them the same day, because a mock answers the way you told it to
+answer. Testing against it proves that your code works **against your assumptions**, and
+with a protocol like CalDAV, your assumptions are exactly the thing that needs testing.
+
+The fix turned out to be pleasantly boring: run a real CalDAV server inside pytest.
+[Radicale](https://radicale.org/) is a complete CalDAV server, it is pure Python, it
+installs with pip, and it can serve entirely in-process. In this post you will learn how
+to turn it into a test fixture: an in-process server factory, a module-scoped pytest
+fixture, tests that exercise the actual wire protocol, and the same setup running
+unchanged in GitHub Actions. No Docker, no external service, one extra line in your dev
+dependencies.
+
+## Why a mock fails precisely here
+
+A CalDAV interaction crosses at least three layers you did not write: the
+[caldav](https://github.com/python-caldav/caldav) client library, the
+[icalendar](https://github.com/collective/icalendar) serialization on both sides, and the
+server's own semantics. Bugs live between those layers, in places a mock cannot reach,
+because the mock encodes the same misunderstanding as the code under test.
+
+One concrete example from this project. My scheduling engine works in naive local
+datetimes on purpose (a practice schedule is inherently local: "we open at 08:00"), and
+the adapter owns every timezone conversion at the I/O boundary. A mocked client happily
+accepts a naive datetime, and the test passes. A real server stores the event, hands it
+back through a real query, and the assertion `intervals[0].start == booking.start` fails
+by exactly one hour if any conversion on the round trip is wrong. That is the class of
+bug that reaches production when the calendar in your tests is imaginary.
+
+## Why Radicale is an ideal fixture
+
+[Radicale](https://radicale.org/) is a small CalDAV and CardDAV server that people run
+for real self-hosted calendars. Three properties make it unusually good as a test
+dependency:
+
+| Property | Why it matters for tests |
+| --- | --- |
+| Pure Python, on PyPI | It lives in the same virtualenv as pytest. Nothing to orchestrate, no Docker layer, works on the free tier of any CI. |
+| Exposes a WSGI application | You can serve it in-process from Python, on a free port, in a daemon thread. Startup is effectively instant. |
+| Storage is plain files | Every calendar is a folder, every event is an `.ics` file. A temp directory is a blank server; deleting it is teardown. |
+
+Install it as a dev dependency and you are done with setup:
+
+```bash
+uv add --dev radicale
+# or: pip install radicale
+```
+
+## Building the fixture
+
+### An in-process server, one factory function
+
+Radicale ships a WSGI `Application`, so the standard library's `wsgiref` is enough to
+serve it. The factory below is the one my project uses for both the local dev server and
+the test suite, so tests exercise the exact server developers run
+([full file](https://github.com/abiotov/polyglot-booking-agent/blob/main/src/calendar_adapter/devserver.py)):
+
+```python
+from pathlib import Path
+from wsgiref.simple_server import WSGIRequestHandler, WSGIServer, make_server
+
+import radicale.config
+from radicale.app import Application
+
+
+class _QuietHandler(WSGIRequestHandler):
+    def log_message(self, format: str, *args: object) -> None:
+        pass  # keep pytest output readable
+
+
+def make_dev_server(
+    storage_folder: str | Path,
+    host: str = "127.0.0.1",
+    port: int = 0,
+) -> WSGIServer:
+    """A ready-to-serve Radicale with open auth. Local use only."""
+    configuration = radicale.config.load()
+    configuration.update(
+        {
+            "auth": {"type": "none"},
+            "storage": {"filesystem_folder": str(storage_folder)},
+        },
+        "devserver",
+        privileged=True,
+    )
+    return make_server(host, port, Application(configuration), handler_class=_QuietHandler)
+```
+
+Two details carry most of the value:
+
+- **`port=0`** asks the OS for any free port, and you read the answer back from
+  `server.server_port`. Tests never collide with a dev server you forgot to stop, and
+  parallel CI jobs never fight over a port.
+- **`auth: none`** removes credentials from the picture. The server binds to
+  `127.0.0.1`, so this is safe locally and in CI, and it is exactly why this factory
+  must never serve anything beyond localhost.
+
+<Callout type="note" title="A Windows gotcha worth knowing">
+Radicale probes symlink support at startup and only catches
+<code>PermissionError</code>. On Windows without Developer Mode, <code>os.symlink</code>
+raises a plain <code>OSError</code> (WinError 1314), which crashes storage
+initialization. My devserver wraps the probe so that any <code>OSError</code> means
+"no symlink support", which is the truthful answer. If your team is macOS/Linux only,
+you will never see this; if anyone develops on Windows, you will hit it on day one.
+</Callout>
+
+### The same knobs, outside the tests
+
+Everything the factory sets through `configuration.update(...)` maps one to one to
+Radicale's INI configuration, so the server you test against and a server you run for
+real are configured in the same vocabulary. A standalone setup for actual use looks
+like this:
+
+```ini
+# radicale.ini
+[server]
+hosts = 127.0.0.1:5232
+
+[auth]
+type = htpasswd
+htpasswd_filename = ./users
+htpasswd_encryption = autodetect
+
+[storage]
+filesystem_folder = ./radicale-data
+```
+
+```bash
+python -m radicale --config radicale.ini
+```
+
+Two things change and only two: real use gets a fixed port instead of `port=0`, and
+real use gets authentication (`htpasswd`) instead of `auth: none`. The open-auth
+shortcut exists strictly because the test server binds to `127.0.0.1` and dies with the
+test run. If you expose Radicale beyond localhost with auth disabled, anyone on the
+network can read and edit every calendar; the
+[Radicale documentation](https://radicale.org/master.html#documentation) covers users,
+rights files and reverse-proxy setups when you get there.
+
+### One server per module, one calendar per test
+
+The server is cheap but not free, so module scope is the right trade; calendar
+collections are free, so per-test isolation costs nothing:
+
+```python
+import threading
+from collections.abc import Iterator
+
+import pytest
+
+from calendar_adapter import CalDAVCalendar
+from calendar_adapter.devserver import make_dev_server
+
+
+@pytest.fixture(scope="module")
+def radicale_url(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
+    server = make_dev_server(tmp_path_factory.mktemp("radicale-storage"))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}"
+    finally:
+        server.shutdown()
+        thread.join(timeout=5)
+
+
+@pytest.fixture()
+def calendar(radicale_url: str, request: pytest.FixtureRequest) -> CalDAVCalendar:
+    # One fresh calendar per test keeps tests independent.
+    return CalDAVCalendar(
+        url=radicale_url,
+        username="agent",
+        password="agent",
+        calendar_name=f"appointments-{request.node.name}",
+        timezone="Africa/Porto-Novo",
+    )
+```
+
+The per-test trick is in `calendar_name`: naming the collection after
+`request.node.name` gives every test its own calendar on the shared server. No server
+restarts, no cross-test contamination, and when a test fails you can point a real
+client (Thunderbird, DAVx5) at the URL and inspect the exact calendar it left behind.
+
+### Tests that exercise the real wire protocol
+
+These are real tests from the project, unedited. Note what they quietly cover: icalendar
+serialization both ways, timezone round trips through an aware server, and the server's
+actual view of what "free" means.
+
+```python
+from datetime import date, datetime
+
+from calendar_adapter import SlotTakenError
+
+MONDAY = date(2026, 7, 20)
+
+
+def test_booked_appointment_becomes_a_busy_interval(calendar) -> None:
+    booking = calendar.book(
+        start=datetime(2026, 7, 20, 8, 15),
+        end=datetime(2026, 7, 20, 8, 30),
+        patient_name="Jean Kokou",
+        patient_phone="+22997000000",
+    )
+    intervals = calendar.busy_intervals(MONDAY)
+    assert len(intervals) == 1
+    assert intervals[0].start == booking.start
+    assert intervals[0].end == booking.end
+
+
+def test_read_before_write_refuses_a_taken_slot(calendar) -> None:
+    calendar.book(
+        start=datetime(2026, 7, 20, 9, 0),
+        end=datetime(2026, 7, 20, 9, 15),
+        patient_name="First Caller",
+        patient_phone="+22990000001",
+    )
+    with pytest.raises(SlotTakenError):
+        calendar.book(
+            start=datetime(2026, 7, 20, 9, 0),
+            end=datetime(2026, 7, 20, 9, 15),
+            patient_name="Second Caller",
+            patient_phone="+22990000002",
+        )
+```
+
+The second test is the one I care most about. CalDAV has no transactions, so my adapter
+re-reads the target span immediately before writing and refuses the booking if the slot
+was taken in the meantime (a practitioner can block a slot from their phone while a
+caller is on the line; this race is real). That behavior **cannot** be tested against a
+mock in any honest way, because the whole question is what a real server returns between
+two real requests.
+
+Here is the run, on my Windows laptop:
+
+```text
+$ uv run pytest tests/test_calendar_adapter.py -q
+..........
+10 passed in 28.03s
+```
+
+About 3 seconds per test, almost all of it caldav client discovery rather than the
+server. That is slow next to a unit test and completely fine for an integration tier
+that runs on every push. The important part is what stays out of it.
+
+## Keep the real server at the boundary
+
+Running a server does not mean every test should touch it. The design that makes this
+cheap is older than any of the tools: keep the core pure, push I/O to the edge.
+
+<FigBoundary num="1" />
+
+In this project the scheduling engine is a pure function,
+`rank_slots(day, busy, client_type, config)`. Given the same inputs it returns the same
+ranking, so it is covered by ordinary unit tests plus
+[Hypothesis](https://hypothesis.readthedocs.io/) property tests (for example: no random
+calendar state may ever produce avoidable fragmentation of the day). Those run in
+milliseconds with zero I/O. Only the adapter, whose entire job is I/O, earns the real
+server. The suite stays fast because the slow tier is small, and the slow tier is
+trustworthy because nothing in it is fake.
+
+## Nothing changes in CI
+
+Because Radicale is just a Python dependency, the GitHub Actions job does not know it
+exists. This is the project's actual workflow, with no `services:` block and no
+container setup:
+
+```yaml
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --extra dev
+      - run: uv run pytest
+```
+
+Compare that with the Docker route (a `services:` container, an image version to pin, a
+health check to wait on, a port mapping to get wrong) and the in-process approach earns
+its keep twice: once in setup you skip, once in the year of maintenance you skip.
+
+## Honest limits
+
+- **Radicale is not iCloud or Google.** It validates that you speak CalDAV correctly,
+  not that you survive every provider's quirks (auth flows, discovery redirects, quota
+  errors). I still smoke-test against the production provider before a release; the
+  fixture removes the daily need for it, not the final check.
+- **The residual race is still there.** Read-before-write shrinks the double-booking
+  window to milliseconds; CalDAV without transactions cannot close it completely. The
+  fixture lets me test the refusal path, not abolish the race.
+- **In-process means shared interpreter.** The server thread shares the GIL with your
+  tests. For I/O-bound test traffic this is irrelevant; if you ever load-test, run
+  Radicale as a separate process instead.
+- **Module scope is a trade.** One server per module is fast but means storage
+  accumulates across tests in that module. Unique per-test collection names make that
+  harmless; if you skip them, you will chase phantom busy intervals.
+
+## Where this leaves you
+
+- Testing protocol code against a mock tests your assumptions, and with calendars the
+  assumptions (timezones, overlaps, what "free" means) are where the bugs are.
+- Radicale turns "integration test against a real CalDAV server" into a pip install, a
+  WSGI factory, and a 15-line pytest fixture. No Docker.
+- `port=0` plus per-test collection names give you parallel-safe, isolated tests on one
+  shared in-process server.
+- Keep the pure logic out of the integration tier. A pure core plus a thin adapter is
+  what makes the real-server approach affordable.
+- The pattern generalizes: whenever a dependency ships as a lightweight real server,
+  prefer it over a hand-written mock. The mock is code you must keep correct; the real
+  server is correctness you get for free.
+
+The complete adapter, devserver and test suite are in the
+[polyglot-booking-agent repo](https://github.com/abiotov/polyglot-booking-agent). If you
+spot a CalDAV behavior these tests should cover and do not, open an issue: I would much
+rather learn about it from a failing test than from a double-booked patient.
+
+## References
+
+- [Radicale](https://radicale.org/) and its [documentation](https://radicale.org/master.html#documentation)
+- [RFC 4791: Calendaring Extensions to WebDAV (CalDAV)](https://datatracker.ietf.org/doc/html/rfc4791)
+- [python-caldav](https://github.com/python-caldav/caldav), the client library used by the adapter
+- [icalendar](https://github.com/collective/icalendar), serialization of `.ics` events
+- [Hypothesis](https://hypothesis.readthedocs.io/), property-based testing for the pure engine
+- [polyglot-booking-agent](https://github.com/abiotov/polyglot-booking-agent), the project all code in this post comes from
